@@ -27,3 +27,14 @@ npx expo start
 Shake your phone to have the developper menu
 
 
+
+Navigation :
+
+```sh
+npm install expo
+npm install @react-navigation/native
+npx expo install react-native-screens react-native-safe-area-context
+npm install @react-navigation/bottom-tabs
+npm install @react-navigation/material-top-tabs react-native-tab-view
+```
+
