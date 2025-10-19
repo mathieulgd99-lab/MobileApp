@@ -34,7 +34,14 @@ Navigation :
 npm install expo
 npm install @react-navigation/native
 npx expo install react-native-screens react-native-safe-area-context
+# To select differents pages/windows at the bottom
 npm install @react-navigation/bottom-tabs
+# To select differents pages/windows at the top
 npm install @react-navigation/material-top-tabs react-native-tab-view
 ```
 
+Install svg :
+```sh
+# To represent differents zones of the gym
+npm install @react-navigation/material-top-tabs react-native-tab-view
+```
