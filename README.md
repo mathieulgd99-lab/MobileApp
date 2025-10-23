@@ -38,6 +38,8 @@ npx expo install react-native-screens react-native-safe-area-context
 npm install @react-navigation/bottom-tabs
 # To select differents pages/windows at the top
 npm install @react-navigation/material-top-tabs react-native-tab-view
+# To have a tab that can goes down
+npm install react-native-collapsible-tab-view
 ```
 
 Install svg :

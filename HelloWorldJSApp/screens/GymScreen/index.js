@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Image, StyleSheet, Text } from 'react-native';
+import { ScrollView,View, Image, StyleSheet, Text } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 // import des sous-pages
@@ -12,7 +12,7 @@ const Tab = createMaterialTopTabNavigator();
 
 export default function GymScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
     {/* Image ou bannière au-dessus */}
       <Image
         source={require('../../assets/photo.avif')}
@@ -34,7 +34,7 @@ export default function GymScreen() {
         <Tab.Screen name="Ranking" component={RankingScreen} />
         </Tab.Navigator>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
