@@ -10,12 +10,12 @@ import { ScrollView,
         Button
 } from 'react-native';
 import Svg, { Rect, Polygon, Line } from 'react-native-svg';
-// import Button from 'react-bootstrap/Button';
 
 // TODO : gérer l'affichage d'un bloc : numéro en gris en haut, couleur des prises en contours, possibilité de sélectionner tt les blocs d'un même numéro
-// TODO : -afficher dans les bonnes dimensions les images
+// TODO : -afficher dans les bonnes dimensions les images -> passer en pourcentage
 //       - mettre une bordure de style
 //       - mettre un filtre : quand je clique sur un mur, je met les images qui ont le meme zoneid
+//       - Regler le probleme du on press trop sensible
 
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur
@@ -28,11 +28,11 @@ export default function BoulderScreen() {
   ];
 
   const images = [
-    { id: '1', zoneId: "murC", grade: 10, source:require('../../wall_images/wall_S-O.jpg')},
-    { id: '2', zoneId: 'murC', grade: 6, source: require('../../wall_images/wall_S-O.jpg') },
-    { id: '3', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg') },
-    { id: '4', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg') },
-    { id: '5', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg') },
+    { id: '1', zoneId: "murC", grade: 10, source:require('../../wall_images/wall_S-O.jpg'), color: "gold"},
+    { id: '2', zoneId: 'murC', grade: 6, source: require('../../wall_images/wall_S-O.jpg'), color: "green" },
+    { id: '3', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "orange" },
+    { id: '4', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "pink" },
+    { id: '5', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "gold" },
   ]
 
   const grades = [
@@ -56,7 +56,8 @@ export default function BoulderScreen() {
 
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImage, setShowImage] = useState(false)
 
 
 
@@ -86,7 +87,7 @@ export default function BoulderScreen() {
   }
 
   function handleCloseModal() {
-    setSelectedImage(false);
+    setShowImage(false);
   }
 
   const handleClickGrade = (gradeDifficulty) => {
@@ -97,6 +98,12 @@ export default function BoulderScreen() {
     setSelectedZone(prev => prev === zoneId ? null : zoneId);
   };
 
+  const handleClickImage = (image) => {
+    // setSelectedImage(prev => prev === imageId ? false : imageId);
+    setSelectedImage(image)
+    setShowImage(true)
+  };
+  
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
     const backColor = isSelected ? '#8bc34a' : '#808080'
@@ -110,6 +117,16 @@ export default function BoulderScreen() {
       </Pressable>
     )
   }
+
+  const renderImage = ({item}) => {
+    return (
+      <Pressable
+      onPressIn={() => handleClickImage(item)}>
+        <Image source={item.source} style={[styles.image, {borderColor: item.color}]}/>
+      </Pressable>
+    )
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Svg height="500" width="350" style={styles.map}>
@@ -129,6 +146,7 @@ export default function BoulderScreen() {
           Boulders
         </Text>
       </View>
+  
       <FlatList
         data={grades}
         horizontal
@@ -137,31 +155,69 @@ export default function BoulderScreen() {
         scrollEnabled={true}   // TODO : aggrandir la zone de scroll
         extraData={selectedGrade}
       />
+
       <FlatList
           data={filteredImages}
-          renderItem={({item}) => <Image source={item.source} style={styles.image} />}
-          // onPressIn={setSelectedImage(true)}
+          renderItem={renderImage}
           keyExtractor={(image) => image.id}
           scrollEnabled={false}   // empêche le conflit de scroll
           numColumns={2}
           columnWrapperStyle={styles.row}
         />
-      {/* {selectedImage && (      
+
+
+      {/* Show the image on full screen when we click on one */}
+      {showImage && (      
         <Modal
-        visible={selectedImage}
+        visible={showImage}
         onRequestClose={handleCloseModal}
         animationType="fade"
-        transparent={true}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text>Modal body text goes here.</Text>
-            <Button title="Fermer" onPress={handleCloseModal} />
+        <View>
+          <View style={styles.header}>
+            <Text style={styles.header_grade}>{selectedImage.grade}</Text>
+          </View>
+          
+          <Image source={selectedImage.source} style={styles.image_zoomed}/>
+          <View style={[
+                styles.footer,
+                { backgroundColor: selectedImage?.color || '#000' }
+              ]}>
+                <Text style={[
+                  styles.footerText,
+                ]}>
+                  Ouvert depuis : 
+                </Text>
+
+                <Text style={[
+                  styles.footerText,
+                ]}>
+                  Points : 
+                </Text>
+
+                <Text style={[
+                  styles.footerText,
+                ]}>
+                  Tops : 
+                </Text>
+
+                <Pressable
+                  onPress={handleCloseModal}
+                  style={[
+                    styles.footerButton,
+                  ]}
+                >
+                  <Text style={[
+                    styles.footerButtonText
+                  ]}>
+                    Fermer
+                  </Text>
+                </Pressable>
           </View>
         </View>
       </Modal>
       )
-      } */}
+      }
     </ScrollView>
 
 );
@@ -203,5 +259,53 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius:6,
     marginHorizontal: 8,
-  }
+  },
+
+  image_zoomed: {
+    width: "100%",
+    height: "85%",
+  },
+
+  footer: {
+    height: "10%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  footerText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  footerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 6,
+    borderColor: "white",
+    backgroundColor: 'transparent',
+    color: "white",
+  },
+  footerButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color : "white",
+  },
+
+  header : {
+    backgroundColor : 'white',
+    height: "5%",
+    alignItems: "center",
+
+  },
+
+  header_grade : {
+    backgroundColor : 'grey',
+    color : 'white',
+    width : "5%",
+    textAlign: 'center',
+    borderRadius: 5,
+    fontSize: 18,
+  },
 });
