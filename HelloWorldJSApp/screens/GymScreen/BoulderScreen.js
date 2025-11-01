@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
 import { ScrollView,
         Text,
-        StyleSheet,
         Modal,
         Image,
         FlatList,
         View,
         Pressable,
-        Button
 } from 'react-native';
-import Svg, { Rect, Polygon, Line } from 'react-native-svg';
+import Svg, {Polygon } from 'react-native-svg';
 import styles from './styles';
 
-// TODO : gérer l'affichage d'un bloc : numéro en gris en haut, couleur des prises en contours, possibilité de sélectionner tt les blocs d'un même numéro
-// TODO : -afficher dans les bonnes dimensions les images -> passer en pourcentage
-//       - mettre une bordure de style
-//       - mettre un filtre : quand je clique sur un mur, je met les images qui ont le meme zoneid
-//       - Regler le probleme du on press trop sensible
 
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur
@@ -100,7 +93,6 @@ export default function BoulderScreen() {
   };
 
   const handleClickImage = (image) => {
-    // setSelectedImage(prev => prev === imageId ? false : imageId);
     setSelectedImage(image)
     setShowImage(true)
   };

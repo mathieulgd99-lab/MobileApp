@@ -1,0 +1,13 @@
+Backend : 
+    - Creer un compte administrateur
+    - Faire une authentification par token -> 1 token pour reconnaitre user et qu'il soit connecté
+    - router les appels post, delete,
+    - If admin, ajouter une page : affiche la liste de blocs triés par zones. Peut en supprimer, en ajouter en remplissant un form : image, cotations, couleur prises,
+    zone associé
+    Autre possibilité, ajouter un bouton delete/add sur la page de blocs if admin
+
+Frontend : 
+    - Faire une liste dynamique des images de blocs
+    - Ajouter zones manquantes
+    - Modifier le onPressIn pour avoir un truc moins sensible
+    - Créer un fichier gérant les appels au backend : un ensemble de function faisant des await fecth

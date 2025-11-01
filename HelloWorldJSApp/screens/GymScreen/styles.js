@@ -1,19 +1,19 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-    container: {
-        paddingTop: 24,
-        alignItems: 'center',
-        backgroundColor: '#121212',
-        paddingVertical: 20,
-        paddingBottom: 60,
-      },
-    map: {
+  container: {
+    paddingTop: 24,
+    alignItems: 'center',
+    backgroundColor: '#121212',
+    paddingVertical: 20,
+    paddingBottom: 60,
+  },
+  map: {
     backgroundColor: '#1e1e1e',
     borderRadius: 10,
     marginBottom: 16,
-    },
-    image: {
+  },
+  image: {
     width: 170,
     height: 250,
     borderRadius: 5,
@@ -22,13 +22,12 @@ export default StyleSheet.create({
     marginHorizontal: 8,
     marginBottom: 10,
     marginTop: 20,
-
-    },
-    text: {
+  },
+  text: {
     color: 'white',
     fontSize: 18,
-    },
-    grade: {
+  },
+  grade: {
     color: 'white',
     fontSize: 13,
     textAlign: 'center',
@@ -36,26 +35,25 @@ export default StyleSheet.create({
     height: 30,
     borderRadius:6,
     marginHorizontal: 8,
-    },
-
-    image_zoomed: {
+  },
+  image_zoomed: {
     width: "100%",
     height: "85%",
-    },
+  },
 
-    footer: {
+  footer: {
     height: "10%",
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    },
-    footerText: {
+  },
+  footerText: {
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
-    },
-    footerButton: {
+  },
+  footerButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
@@ -63,27 +61,27 @@ export default StyleSheet.create({
     borderColor: "white",
     backgroundColor: 'transparent',
     color: "white",
-    },
-    footerButtonText: {
+  },
+  footerButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color : "white",
-    },
+  },
 
-    header : {
+  header : {
     backgroundColor : 'white',
     height: "5%",
     alignItems: "center",
 
-    },
+  },
 
-    header_grade : {
+  header_grade : {
     backgroundColor : 'grey',
     color : 'white',
     width : "5%",
     textAlign: 'center',
     borderRadius: 5,
     fontSize: 18,
-    },
+  },
 });
     

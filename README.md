@@ -47,3 +47,19 @@ Install svg :
 # To represent differents zones of the gym
 npm install @react-navigation/material-top-tabs react-native-tab-view
 ```
+Install synchronisation :
+```sh
+# To access token
+npx expo install @react-native-async-storage/async-storage
+```
+
+Backend : 
+
+```sh
+cd backend
+npm init -y
+npm install express sqlite sqlite3 jsonwebtoken bcryptjs cors dotenv http-status
+
+
+node server.js
+```
