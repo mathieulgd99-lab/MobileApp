@@ -8,7 +8,7 @@ import { ScrollView,
         Pressable,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
-import styles from './styles';
+import styles from '../styles';
 
 
 export default function BoulderScreen() { 

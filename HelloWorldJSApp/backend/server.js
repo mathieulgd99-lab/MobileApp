@@ -18,15 +18,22 @@ const PORT = process.env.PORT || 3000;
 
 function auth(req, res, next) {
   const header = req.headers.authorization;
-  if (!header) return res.status(400).json({ error: 'Missing token' });
+  if (!header) return res.status(401).send('No token');
   const token = header.split(' ')[1];
+  if (!token) return res.status(401).send('No token');
   try {
-    const paylod = jwt.verify(token, JWT_SECRET)
-    req.user = paylod
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' });
   }
+}
+
+
+function requireAdmin(req, res, next) {
+  if (req.user?.role === 'admin') return next();
+  return res.status(403).send('Forbidden');
 }
 
 // curl -v -X POST http://localhost:3000/api/register \
@@ -39,17 +46,20 @@ function auth(req, res, next) {
         console.log("server.js : start register ")
         const { email, password, display_name } = req.body || {};
         if (!email || !password || !display_name) {
+          console.log("error, invalid args")
           return res.status(400).json({ error: `You must specify email and password : ${email} - ${password} - ${display_name}` });
         }
         const hash = await bcrypt.hash(password, 10);
         try {
           const result = await db.run('INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?)', [email, hash, display_name]);
+          const role = 'user';
           const userId = result.lastID;
-          const token = jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: '7d' });
-          res.json({ token, user: { id: userId, email, display_name } });
+          const token = jwt.sign({ userId, email, display_name, role }, JWT_SECRET, { expiresIn: '7d' });
           console.log("serv.js : end")
+          res.json({ token, user: { id: userId, email, display_name, role } });
 
         } catch (err) {
+          console.log("error during try")
           res.status(400).json({ error: 'User exists' });
         }
       });
@@ -66,8 +76,9 @@ function auth(req, res, next) {
         if (!user) return res.status(401).json({ error: 'Invalid email' });
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
-        const token = jwt.sign({ userId: user.id, email }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: user.id, email, display_name: user.display_name } });
+        const role = user.role || 'user';
+        const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role}, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ token, user: { id: user.id, email, display_name: user.display_name, role } });
         console.log("server.js : end login ")
     });
 

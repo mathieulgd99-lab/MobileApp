@@ -2,27 +2,49 @@ import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login, register } from '../api/auth';
 import jwtDecode from 'jwt-decode';
-import * as SecureStore from 'expo-secure-store';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
 
+    // When state change -> re-render
     const [user, setUser] = useState(null)
     const [token, setToken] = useState(null);
+
+    // Run when rendering 
+    useEffect(() => {
+      (async () => {
+        try {
+          const saved = await AsyncStorage.getItem('token');
+          if (!saved) return;
+          setToken(saved);
+          const payload = jwtDecode(saved);
+          setUser({
+            id: payload.id,
+            email: payload.email,
+            display_name: payload.display_name,
+            role: payload.role
+          });
+        } catch (err) {
+          console.log('AuthProvider: failed to load token', err);
+        }
+      })();
+    }, []); // Dependencies
+
 
     const log_in = async (email,password) => {
       try {
         console.log("AuthContext.js : awaiting login");
-        const data = await login(email, password);
-        console.log("AuthContext.js : end of login", data);
+        const { token: serverToken, user: userData } = await login(email, password);
+        console.log("AuthContext.js : end of login", userData);
     
-        if (data && data.user) {
-          console.log(`setting new user : ${data.user.email}`);
-          setUser(data.user);
+        if (userData) {
+          setUser(userData);
+          await AsyncStorage.setItem('token',serverToken);
+          setToken(serverToken)
         }
     
-        return data;
+        return userData;
       } catch (err) {
         console.error("AuthContext.js : error in log_in", err);
         throw err;
@@ -30,20 +52,26 @@ export const AuthProvider = ({children}) => {
     }
 
     const reg = async (email, password, username) => {
-        data = await register(email,password,username)
-        if (data.user) setUser(data.user)
-        return data
+      const { token: serverToken, user: userData}  = await register(email,password,username);
+      if (userData) {
+        setUser(userData.user)
+        await AsyncStorage.setItem('token',serverToken);
+        setToken(serverToken)
+      }
+      console.log("AuthContext.js : end of register", userData);
+      return userData
     }
 
     const log_out = async () => {
         setUser(null)
+        setToken(null)
+        await AsyncStorage.removeItem('token');
     }
 
-    // const log_out = () => {
-    // }
+    const isAdmin = user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{user,log_in, reg, log_out}}>
+        <AuthContext.Provider value={{user,token, isAdmin,log_in, reg, log_out}}>
           {children}
         </AuthContext.Provider>
       );

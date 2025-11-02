@@ -7,17 +7,16 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
   const [newUser, setNewUser] = useState(false);
 
   const {user, log_in, reg, log_out} = useContext(AuthContext);
-  const conditionRemplie = () => {
-    if (newUser) {
-      return password.length > 0 && email.length > 0 && username.length > 0}
-    else {
-      return password.length > 0 && email.length > 0
-    }
-  }
+  // const conditionRemplie = () => {
+  //   if (newUser) {
+  //     return password.length > 0 && email.length > 0 && username.length > 0}
+  //   else {
+  //     return password.length > 0 && email.length > 0
+  //   }
+  // }
 
   if (user) {
     return (
@@ -34,12 +33,12 @@ export default function ProfileScreen() {
     console.log("Submited")
     if (newUser) {
       console.log("start Registering")
-      const res = await reg(email,password, username)
-      console.log(`End of submit, res : ${res}`)
+      await reg(email,password, username)
+      console.log(`End of submit`)
     } else {
       console.log("start login")
-      const res = await log_in(email,password)
-      console.log(`End of submit, res : ${res}`)
+      await log_in(email,password)
+      console.log(`End of submit`)
     }
   }
 
@@ -57,7 +56,7 @@ export default function ProfileScreen() {
         <Text> Pas encore de compte ?</Text>
         <Button title="Créer un nouveau compte" onPress={() => {setNewUser(true)}}/>
       </View>
-      };
+      }
       {newUser &&
       <View>
         <Text>Se connecter ?</Text>

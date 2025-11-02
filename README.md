@@ -63,3 +63,8 @@ npm install express sqlite sqlite3 jsonwebtoken bcryptjs cors dotenv http-status
 
 node server.js
 ```
+
+Install jwt signature/decode 
+```sh
+npm install jwt-decode
+```

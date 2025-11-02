@@ -1,9 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // sert de router, appels les fonctions qui font des appels précis à la  database
-// const API_BASE = "http://localhost:3000"; // Pour iOS simulator
-// const API_BASE = 'http://10.0.2.2:3000';  // Android emulator
-const API_BASE = "http://192.168.1.42:3000"; // Idk
+const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 async function getToken() {
     return AsyncStorage.getItem('token');   
@@ -12,26 +10,27 @@ async function getToken() {
 export async function login(email, password) {
     console.log("auth.js : await for login in server.js")
 
-    // const res = await fetch(`${API_BASE}/api/login`, {
-    //     method: 'POST',
-    //     headers: {'Content-Type' : 'application/json'},
-    //     body: {"email" : email,
-    //             "password" : password
-    //     }
-    // });
-    // console.log("auth.js : response status", res.status, res.statusText);
-    // const result = await res.json();
-    // console.log("auth.js : raw response text:", result);
+    const res = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: {'Content-Type' : 'application/json'},
+        body: JSON.stringify({"email" : email,
+                "password" : password
+        })
+    });
+    console.log("auth.js : response status", res.status, res.statusText);
+    const result = await res.json();
+    console.log("auth.js : raw response text:", result);
     console.log("auth.js : end of login in server.js")
-
-    return {
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoidGVzdCIsImlhdCI6MTc2MTk3NTU5NiwiZXhwIjoxNzYyNTgwMzk2fQ.2PLDOsuxvu1c8WuyUEUfSFWjb29Ua3rhSKcfWixTpj4",
-        "user": {
-            "id": 2,
-            "email": "test",
-            "display_name": "test"
-        }
-    }
+    return result
+    // return {
+    //     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoidGVzdCIsImlhdCI6MTc2MTk3NTU5NiwiZXhwIjoxNzYyNTgwMzk2fQ.2PLDOsuxvu1c8WuyUEUfSFWjb29Ua3rhSKcfWixTpj4",
+    //     "user": {
+    //         "id": 1,
+    //         "email": "Admin",
+    //         "display_name": "Admin",
+    //         "role": "admin"
+    //     }
+    // }
 }
 
 export async function register(email, password, display_name) {
@@ -39,10 +38,10 @@ export async function register(email, password, display_name) {
     const res = await fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: {'Content-Type' : 'application/json'},
-        body: {"email" : email,
+        body: JSON.stringify({"email" : email,
             "password" : password,
             "display_name" : display_name
-    }
+    })  
     });
     const result = await res.json();
     console.log("auth.js : end of register in auth.js")
