@@ -11,3 +11,4 @@ Frontend :
     - Ajouter zones manquantes
     - Modifier le onPressIn pour avoir un truc moins sensible
     - Créer un fichier gérant les appels au backend : un ensemble de function faisant des await fecth
+    - ajouter plusieurs murs en même temps pour 1 seule image

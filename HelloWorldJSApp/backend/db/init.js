@@ -33,6 +33,23 @@ async function initDb() {
           FOREIGN KEY(user_id) REFERENCES users(id)
         );
       `);
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS images (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          zone_id TEXT NOT NULL,
+          grade INTEGER NOT NULL,
+          color TEXT NOT NULL,
+          path TEXT NOT NULL,
+          uploaded_by INTEGER,
+          added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          archived_at DATETIME DEFAULT NULL,
+          is_current INTEGER NOT NULL DEFAULT 1,
+          original_filename TEXT,
+          mime_type TEXT,
+          filesize INTEGER,
+          FOREIGN KEY(uploaded_by) REFERENCES users(id)
+        );
+      `);
       return db;
     }
     
