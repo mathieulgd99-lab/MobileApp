@@ -40,8 +40,19 @@ npm install @react-navigation/bottom-tabs
 npm install @react-navigation/material-top-tabs react-native-tab-view
 # To have a tab that can goes down
 npm install react-native-collapsible-tab-view
+# To open galery when administrator add new image
+npm install expo-image-picker
+# Create a dropdown menu
+expo install expo-image-picker
+# Permissions
+npx pod-install ios
 ```
 
+Backend :
+```sh
+# Gestion des fichiers - uploads  d'images.
+npm install multer
+```
 Install svg :
 ```sh
 # To represent differents zones of the gym

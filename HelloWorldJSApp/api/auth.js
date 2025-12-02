@@ -1,11 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // sert de router, appels les fonctions qui font des appels précis à la  database
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
-async function getToken() {
-    return AsyncStorage.getItem('token');   
-}
+
 
 export async function login(email, password) {
     console.log("auth.js : await for login in server.js")
@@ -22,19 +20,10 @@ export async function login(email, password) {
     console.log("auth.js : raw response text:", result);
     console.log("auth.js : end of login in server.js")
     return result
-    // return {
-    //     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoidGVzdCIsImlhdCI6MTc2MTk3NTU5NiwiZXhwIjoxNzYyNTgwMzk2fQ.2PLDOsuxvu1c8WuyUEUfSFWjb29Ua3rhSKcfWixTpj4",
-    //     "user": {
-    //         "id": 1,
-    //         "email": "Admin",
-    //         "display_name": "Admin",
-    //         "role": "admin"
-    //     }
-    // }
 }
 
 export async function register(email, password, display_name) {
-    console.log("auth.js : await for register in server.js")
+    console.log("auth.js : await of register in auth.js")
     const res = await fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: {'Content-Type' : 'application/json'},
@@ -47,6 +36,81 @@ export async function register(email, password, display_name) {
     console.log("auth.js : end of register in auth.js")
     return result
 }
+
+const extToMime = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+  };
+  
+function guessMimeType(filename, fallback = 'image/jpeg') {
+if (!filename) return fallback;
+const parts = filename.split('.');
+const ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
+return extToMime[ext] || fallback;
+}
+
+export async function addImage(pickedAsset, zoneId, grade, color,token) {
+
+    try {
+        console.log("Entre dans addImage auth.js")
+        const formData = new FormData();
+        const uri = pickedAsset.uri;
+        const filename = pickedAsset.fileName || uri.split('/').pop();
+        const mimeType = pickedAsset.type || 'image/jpeg';
+
+        formData.append('image', {
+        uri: Platform.OS === 'ios' && uri.startsWith('file://') ? uri : uri,
+        name: filename,
+        type: mimeType,
+        });
+
+        formData.append('zoneId', zoneId);
+        formData.append('grade', String(grade));
+        formData.append('color', color);
+        console.log("lance le fetch dans addImage auth.js")
+        const res = await fetch(`${API_BASE}/api/images`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,  // Sécurisation via token
+            'Accept': 'application/json',
+            },
+        body: formData,
+        });
+
+        const json = await res.json();
+        if (!res.ok) {
+        console.log('Server error', json);
+        return { error: json };
+        }
+        console.log("Sort de addImage auth.js")
+        return json;
+        } catch (err) {
+        console.error('addImage error', err);
+        return { error: err.message || err };
+        }
+}
+
+export async function getImages() {
+    try {
+      const res = await fetch(`${API_BASE}/api/images`, {
+        method: 'GET',
+      });
+  
+      const json = await res.json();
+      if (!res.ok) {
+        console.log('Server error', json);
+        return { error: json };
+      }
+      return json;
+    } catch (err) {
+      console.error('addImage error', err);
+      return { error: err.message || err };
+    }
+}
+
 
 export async function updatePassword(newPassword) {
 

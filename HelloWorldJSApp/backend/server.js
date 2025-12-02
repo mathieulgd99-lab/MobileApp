@@ -9,9 +9,14 @@ const bcrypt = require('bcryptjs');
 const initDb = require('./db/init');
 const status = require('http-status')
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 3000;
@@ -35,6 +40,22 @@ function requireAdmin(req, res, next) {
   if (req.user?.role === 'admin') return next();
   return res.status(403).send('Forbidden');
 }
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// storage multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+    cb(null, safeName);
+  },
+});
+const upload = multer({ storage });
+
 
 // curl -v -X POST http://localhost:3000/api/register \
 //   -H "Content-Type: application/json" \
@@ -102,6 +123,108 @@ function requireAdmin(req, res, next) {
       } catch (err) {
         console.error("server.js : error fetching comments", err);
         res.status(500).json({ error: "Failed to fetch comments" });
+      }
+    });
+
+    app.post('/api/images', auth, requireAdmin, upload.single('image'), async (req, res) => {
+      try {
+        console.log('server.js : POST /api/images');
+        const file = req.file; // multer
+        const { zoneId, grade, color } = req.body || {};
+    
+        if (!file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+        if (!zoneId || !grade || !color) {
+          // supprimer le fichier si metadata manquante
+          try { fs.unlinkSync(file.path); } catch (e) { console.warn('unable to delete', e); }
+          return res.status(400).json({ error: 'Missing zoneId, grade or color' });
+        }
+    
+        // chemin stocké en DB (relatif au dossier projet)
+        const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
+    
+        // inserted_by from token (req.user set by auth middleware)
+        const uploadedBy = req.user?.userId || null;
+    
+        const sql = `
+          INSERT INTO images (zone_id, grade, color, path, uploaded_by, original_filename, mime_type, filesize)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const params = [
+          zoneId,
+          parseInt(grade, 10),
+          color,
+          storedPath,
+          uploadedBy,
+          file.originalname,
+          file.mimetype,
+          file.size,
+        ];
+    
+        const result = await db.run(sql, params);
+        const insertedId = result.lastID;
+    
+        return res.status(201).json({
+          success: true,
+          id: insertedId,
+          path: storedPath,
+          original_filename: file.originalname,
+        });
+      } catch (err) {
+        console.error('Error in POST /api/images', err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+    });
+
+    app.get('/api/images', async (req, res) => {
+      try {
+        console.log("server.js : selecting all images");
+        const all = await db.all('SELECT * FROM images');
+        res.json(all);
+      } catch (err) {
+        console.error("server.js : error fetching comments", err);
+        res.status(500).json({ error: "Failed to fetch comments" });
+      }
+    });
+
+    app.patch('/api/images/:id/status', auth, requireAdmin, async (req, res) => {
+      try {
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ error: 'Invalid id' });
+    
+        const { is_current } = req.body;
+        if (typeof is_current === 'undefined') {
+          return res.status(400).json({ error: 'Missing is_current in body' });
+        }
+        const isCurrentInt = is_current ? 1 : 0;
+        const archivedAt = isCurrentInt === 0 ? new Date().toISOString() : null;
+    
+        const sql = `
+          UPDATE images
+          SET is_current = ?, archived_at = ?
+          WHERE id = ?
+        `;
+        const params = [isCurrentInt, archivedAt, id];
+    
+        const result = await db.run(sql, params);
+        // result.changes may indicate rows updated depending on your sqlite wrapper
+        return res.json({ success: true, id, is_current: isCurrentInt, archived_at: archivedAt });
+      } catch (err) {
+        console.error('Error in PATCH /api/images/:id/status', err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+    });
+
+
+    app.get('/api/all_images', async (req, res) => {
+      try {
+        console.log("server.js : selecting all users");
+        const all = await db.all('SELECT * FROM images');
+        res.json(all);
+      } catch (err) {
+        console.error("server.js : error fetching users", err);
+        res.status(500).json({ error: "Failed to fetch users" });
       }
     });
   

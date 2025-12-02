@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView,
         Text,
         Modal,
@@ -10,6 +10,7 @@ import { ScrollView,
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
 
+const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur
@@ -20,6 +21,26 @@ export default function BoulderScreen() {
     { id: 'murToit', points: '20,100 40,120 50,80 120,80 130,50 40,50', label: 'Mur N-O' },
     { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-E' },
   ];
+
+  // const [images, setImages] = useState([]);
+
+  // // Charger les images depuis l'API
+  // useEffect(() => {
+  //   (async () => {
+  //     const res = await getImages();
+  //     if (!res.error) {
+  //       // Convertir format API -> format interne
+  //       const normalized = res.map(img => ({
+  //         id: img.id.toString(),
+  //         zoneId: img.zone_id,
+  //         grade: img.grade,
+  //         color: img.color,
+  //         source: { uri: `${API_BASE}/${img.path}` }
+  //       }));
+  //       setImages(normalized);
+  //     }
+  //   })();
+  // }, []);
 
   const images = [
     { id: '1', zoneId: "murC", grade: 10, source:require('../../wall_images/wall_S-O.jpg'), color: "gold"},
