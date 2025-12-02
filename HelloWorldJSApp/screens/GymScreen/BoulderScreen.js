@@ -6,9 +6,12 @@ import { ScrollView,
         FlatList,
         View,
         Pressable,
+        ActivityIndicator,
+        TouchableOpacity,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
+import { getImages } from '../../api/auth';
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
@@ -22,33 +25,25 @@ export default function BoulderScreen() {
     { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-E' },
   ];
 
-  // const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // // Charger les images depuis l'API
-  // useEffect(() => {
-  //   (async () => {
-  //     const res = await getImages();
-  //     if (!res.error) {
-  //       // Convertir format API -> format interne
-  //       const normalized = res.map(img => ({
-  //         id: img.id.toString(),
-  //         zoneId: img.zone_id,
-  //         grade: img.grade,
-  //         color: img.color,
-  //         source: { uri: `${API_BASE}/${img.path}` }
-  //       }));
-  //       setImages(normalized);
-  //     }
-  //   })();
-  // }, []);
+  useEffect(() => {
+    async function loadImages() {
+      console.log("Boulder.js : fetching images...");
+      const result = await getImages();
 
-  const images = [
-    { id: '1', zoneId: "murC", grade: 10, source:require('../../wall_images/wall_S-O.jpg'), color: "gold"},
-    { id: '2', zoneId: 'murC', grade: 6, source: require('../../wall_images/wall_S-O.jpg'), color: "green" },
-    { id: '3', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "orange" },
-    { id: '4', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "pink" },
-    { id: '5', zoneId: 'murC', grade: 7, source: require('../../wall_images/wall_S-O.jpg'), color: "gold" },
-  ]
+      if (!result.error) {
+        setImages(result);
+      } else {
+        console.log("Erreur getImages :", result.error);
+      }
+
+      setLoading(false);
+    }
+
+    loadImages();
+  }, []);
 
   const grades = [
     { id:'1', difficulty: 1},
@@ -123,22 +118,25 @@ export default function BoulderScreen() {
     const backColor = isSelected ? '#8bc34a' : '#808080'
 
     return (
-      <Pressable
-      onPressIn={() => handleClickGrade(item.difficulty)}
-      style={[styles.grade, { backgroundColor: backColor }]} // Permet d'afficher la feuille de style et de rajouter ce composant dynamique
+      <TouchableOpacity
+      onPress={() => handleClickGrade(item.difficulty)}
       >
-        <Text> {item.difficulty}  0/{countGrade(item.difficulty)}</Text>
-      </Pressable>
+        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  0/{countGrade(item.difficulty)}</Text>
+      </TouchableOpacity>
     )
   }
 
   const renderImage = ({item}) => {
     return (
-      <Pressable
-      onPressIn={() => handleClickImage(item)}>
-        <Image source={item.source} style={[styles.image, {borderColor: item.color}]}/>
-      </Pressable>
+      <TouchableOpacity
+      onPress={() => handleClickImage(item)}>
+        <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
+      </TouchableOpacity>
     )
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="blue" />;
   }
 
   return (
@@ -151,7 +149,7 @@ export default function BoulderScreen() {
             fill={selectedZone === zone.id ? '#8bc34a' : '#808080'}
             stroke="#fff"
             strokeWidth="1"
-            onPressIn={() => handleClickZone(zone.id)}
+            onPressOut={() => handleClickZone(zone.id)}
           />
         ))}
       </Svg>
@@ -192,7 +190,7 @@ export default function BoulderScreen() {
             <Text style={styles.header_grade}>{selectedImage.grade}</Text>
           </View>
           
-          <Image source={selectedImage.source} style={styles.image_zoomed}/>
+          <Image source={{ uri: `${API_BASE}/${selectedImage.path}` }} style={styles.image_zoomed}/>
           <View style={[
                 styles.footer,
                 { backgroundColor: selectedImage?.color || '#000' }
@@ -215,7 +213,7 @@ export default function BoulderScreen() {
                   Tops : 
                 </Text>
 
-                <Pressable
+                <TouchableOpacity
                   onPress={handleCloseModal}
                   style={[
                     styles.footerButton,
@@ -226,7 +224,7 @@ export default function BoulderScreen() {
                   ]}>
                     Fermer
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
           </View>
         </View>
       </Modal>

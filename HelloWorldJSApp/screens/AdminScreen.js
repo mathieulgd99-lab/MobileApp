@@ -14,11 +14,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 // import styles from './styles';
 
-
+const API_BASE = "http://192.168.190.72:3000";
 
 export default function AdminScreen() {
 
-  const {user, token, log_in, reg, log_out} = useContext(AuthContext);
+  const {user, token} = useContext(AuthContext);
   const [color, setColor] = useState('');
   const [pickedImage, setPickedImage] = useState(null);
   const [grade, setGrade] = useState('');
@@ -28,18 +28,16 @@ export default function AdminScreen() {
   const pickImage = async () => {
     console.log("Click admin image");
   
-    // 1. Demander la permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   
     if (status !== 'granted') {
       Alert.alert(
-        "Permission refusée",
-        "L'application a besoin d'accéder à la galerie pour sélectionner une image."
+        "Permission refused",
+        "The application need to access the galery to select an image."
       );
       return;
     }
   
-    // 2. Ouvrir la galerie
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -53,41 +51,42 @@ export default function AdminScreen() {
       setPickedImage(asset);
     } catch (err) {
       console.error("pickImage exception", err);
-      Alert.alert("Erreur", "Impossible d’ouvrir la galerie.");
+      Alert.alert("Erreur", "Impossible to open the galery.");
     }
   };
 
 
   const uploadImage = async () => {
-    if (!pickedImage) return alert("Sélectionne une image");
-    if (!zoneId || !grade || !color) return alert("Champs manquants");
+    if (!pickedImage) return alert("Select an image");
+    if (!zoneId || !grade || !color) return alert("Missing fields");
 
     try {
+      console.log("token :",token)
       const res = await addImage(pickedImage, zoneId, grade, color, token);
       if (!res || res.error) {
-        console.log("Erreur d'upload d'images", res);
-        return alert("Erreur lors de l'upload");
+        console.log("Error of image upload", res);
+        return alert("Error of image upload");
       }
-      alert("Image envoyée !");
+      alert("Image send !");
       setPickedImage(null);
       setZoneId('');
       setGrade('');
       setColor('');
     } catch (err) {
         console.error("uploadImage error", err);
-        alert("Erreur lors de l'upload");
+        alert("Error during the upload");
       }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-      🏠 Bienvenue sur l'écran administrateur 
+      🏠 Welcome on admin page ! 
       </Text>
       <View style={styles.form}>
 
 
-      <Button title="📸 Ajouter un mur" onPress={pickImage} />
+      <Button title="Add a wall" onPress={pickImage} />
 
       {pickedImage && (
         <Image source={{ uri: pickedImage.uri }} style={styles.preview} />
@@ -113,7 +112,7 @@ export default function AdminScreen() {
         <Picker.Item label="14" value="14" />
       </Picker>
       <Text style={styles.smallText}>
-        Sélection actuelle : {grade || "Aucun grade"}
+        Actual selection : {grade || "No grade"}
       </Text>
 
 
@@ -133,7 +132,7 @@ export default function AdminScreen() {
         <Picker.Item label="yellow" value="gold" />
       </Picker>
       <Text style={styles.smallText}>
-        Sélection actuelle : {color || "Aucune couleur"}
+      Actual selection : {color || "No color"}
       </Text>
 
       <Picker
@@ -147,9 +146,9 @@ export default function AdminScreen() {
         <Picker.Item label="murDynamique" value="murDynamique" />
       </Picker>
       <Text style={styles.smallText}>
-        Sélection actuelle : {zoneId || "Aucun mur"}
+      Actual selection : {zoneId || "No wall"}
       </Text>
-      <Button title="📤 Envoyer" onPress={uploadImage} />
+      <Button title="Send" onPress={uploadImage} />
       </View>
     </View>
     

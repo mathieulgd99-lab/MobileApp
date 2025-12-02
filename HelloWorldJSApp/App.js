@@ -21,9 +21,9 @@ function MainNavigator() {
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
-            if (route.name === 'Accueil') iconName = focused ? 'home' : 'home-outline';
+            if (route.name === 'Home page') iconName = focused ? 'home' : 'home-outline';
             else if (route.name === 'Gym') iconName = focused ? 'map' : 'map-outline';
-            else if (route.name === 'Profil') iconName = focused ? 'person-circle' : 'person-circle-outline';
+            else if (route.name === 'Profile') iconName = focused ? 'person-circle' : 'person-circle-outline';
             else if (route.name === 'Admin') iconName = focused ? 'settings' : 'settings-outline';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -33,8 +33,8 @@ function MainNavigator() {
         })}
       >
         <Tab.Screen name="Gym" component={GymScreen} />
-        <Tab.Screen name="Accueil" component={HomeScreen} />
-        <Tab.Screen name="Profil" component={ProfileScreen} />
+        <Tab.Screen name="Home page" component={HomeScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
         {user?.role === "admin" && <Tab.Screen name="Admin" component={AdminScreen} />}
       </Tab.Navigator>
     </NavigationContainer>

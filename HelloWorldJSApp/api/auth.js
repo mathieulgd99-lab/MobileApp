@@ -23,14 +23,14 @@ export async function login(email, password) {
 }
 
 export async function register(email, password, display_name) {
+  //  TOUT cassé ?????? 
     console.log("auth.js : await of register in auth.js")
     const res = await fetch(`${API_BASE}/api/register`, {
-        method: 'POST',
-        headers: {'Content-Type' : 'application/json'},
-        body: JSON.stringify({"email" : email,
-            "password" : password,
-            "display_name" : display_name
-    })  
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
     });
     const result = await res.json();
     console.log("auth.js : end of register in auth.js")
@@ -59,10 +59,14 @@ export async function addImage(pickedAsset, zoneId, grade, color,token) {
         const formData = new FormData();
         const uri = pickedAsset.uri;
         const filename = pickedAsset.fileName || uri.split('/').pop();
-        const mimeType = pickedAsset.type || 'image/jpeg';
+        const mimeType = guessMimeType(filename);
+        const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
+        console.log("fileUri :",fileUri)
+        console.log("fileName :",filename)
+        console.log("mimeType :",mimeType)
 
         formData.append('image', {
-        uri: Platform.OS === 'ios' && uri.startsWith('file://') ? uri : uri,
+        uri: fileUri,
         name: filename,
         type: mimeType,
         });
@@ -70,15 +74,22 @@ export async function addImage(pickedAsset, zoneId, grade, color,token) {
         formData.append('zoneId', zoneId);
         formData.append('grade', String(grade));
         formData.append('color', color);
+
+        if (formData._parts) {
+          console.log('FormData parts:');
+          formData._parts.forEach(p => console.log(p[0], p[1]));
+        }
+
         console.log("lance le fetch dans addImage auth.js")
+        console.log("Formdata : ",formData)
+
         const res = await fetch(`${API_BASE}/api/images`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,  // Sécurisation via token
-            'Accept': 'application/json',
-            },
-        body: formData,
-        });
+          method: 'POST',
+          headers: {
+              'Authorization': `Bearer ${token}`,  // Sécurisation via token
+              },
+          body: formData,
+          });
 
         const json = await res.json();
         if (!res.ok) {
