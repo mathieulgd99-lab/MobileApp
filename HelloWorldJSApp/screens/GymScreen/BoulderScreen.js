@@ -136,7 +136,7 @@ export default function BoulderScreen() {
         onPress={() => toggleValidation(item.id)}
         style={[
           styles.validationButton,
-          { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' }
+          // { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' }
         ]}
         >
         <Text style={styles.validationIcon}>✓</Text>
