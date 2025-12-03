@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function MachinesScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>⚙️ Écran avec les futurs évènements</Text>
+      <Text style={styles.text}>⚙️ Future event screen</Text>
     </View>
   );
 }

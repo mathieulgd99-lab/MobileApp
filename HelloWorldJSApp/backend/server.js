@@ -16,7 +16,7 @@ const fs = require('fs');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 3000;
@@ -99,6 +99,7 @@ const upload = multer({ storage });
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
         const role = user.role || 'user';
         const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role}, JWT_SECRET, { expiresIn: '7d' });
+        console.log("token : ",token)
         res.json({ token, user: { id: user.id, email, display_name: user.display_name, role } });
         console.log("server.js : end login ")
     });
@@ -136,11 +137,10 @@ const upload = multer({ storage });
           return res.status(400).json({ error: 'No file uploaded' });
         }
         if (!zoneId || !grade || !color) {
-          // supprimer le fichier si metadata manquante
           try { fs.unlinkSync(file.path); } catch (e) { console.warn('unable to delete', e); }
           return res.status(400).json({ error: 'Missing zoneId, grade or color' });
         }
-    
+        console.log("zone : {zone_id}", zoneId, "grade : ", grade, "color:", color)
         // chemin stocké en DB (relatif au dossier projet)
         const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
     
@@ -183,8 +183,8 @@ const upload = multer({ storage });
         const all = await db.all('SELECT * FROM images');
         res.json(all);
       } catch (err) {
-        console.error("server.js : error fetching comments", err);
-        res.status(500).json({ error: "Failed to fetch comments" });
+        console.error("server.js : error fetching images", err);
+        res.status(500).json({ error: "Failed to fetch images" });
       }
     });
 

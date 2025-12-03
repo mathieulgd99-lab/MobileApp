@@ -10,6 +10,7 @@ export const AuthProvider = ({children}) => {
     // When state change -> re-render
     const [user, setUser] = useState(null)
     const [token, setToken] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // Run when rendering 
     useEffect(() => {
@@ -27,6 +28,8 @@ export const AuthProvider = ({children}) => {
           });
         } catch (err) {
           console.log('AuthProvider: failed to load token', err);
+        } finally {
+          setLoading(false);
         }
       })();
     }, []); // Dependencies
@@ -72,7 +75,7 @@ export const AuthProvider = ({children}) => {
 
     return (
         <AuthContext.Provider value={{user,token, isAdmin,log_in, reg, log_out}}>
-          {children}
+          {!loading && children}
         </AuthContext.Provider>
       );
 

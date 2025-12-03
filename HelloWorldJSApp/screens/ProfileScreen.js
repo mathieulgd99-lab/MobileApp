@@ -22,9 +22,9 @@ export default function ProfileScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>
-        🏠 Bienvenue {user.display_name} your email is {user.email}!
+        🏠 Welcome {user.display_name} your email is {user.email}!
         </Text>
-        <Button title="Se déconnecter" onPress={() => {log_out()}}></Button>
+        <Button title="Disconnect" onPress={() => {log_out()}}></Button>
       </View>
     )
   }

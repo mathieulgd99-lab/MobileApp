@@ -7,13 +7,13 @@ export default function HomeScreen() {
   if (user) {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>🏠 Bienvenue {user.display_name}!</Text>
+        <Text style={styles.text}>🏠 Welcome {user.display_name}!</Text>
       </View>
     );
   }
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>🏠 Bienvenue sur l’écran d’accueil !</Text>
+      <Text style={styles.text}>🏠 Welcome on the HomePage !</Text>
     </View>
   );
 }
