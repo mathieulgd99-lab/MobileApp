@@ -21,7 +21,13 @@ export default function BoulderScreen() {
     { id: 'murDalle', points: '20,300 40,300 50,250 40,200 20,200', label: 'Mur O-milieu' },
     { id: 'murTension', points: '20,200 40,200 40,120 20,100', label: 'Mur O-haut' },
     { id: 'murToit', points: '20,100 40,120 50,80 120,80 130,50 40,50', label: 'Mur N-O' },
-    { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-E' },
+    { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-milieu' },
+    { id: 'murPorte', points: '220,50 320,50 320,120, 295,120 295,80 220,80', label: 'Mur N-E' },
+    { id: 'murDevers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160', label: 'Mur E' },
+    { id: 'murDidre', points: '295,230 320,230 320,290 295,270', label: 'Mur E-milieu' },
+    { id: 'murAngle', points: '295,270 320,290 250,290 260,270', label: 'Mur E-bas' },
+    { id :'murAngle2', points: '250,290 250,310 255,320 295,320 295,325 320,325 320,300 260,300 260,290' , label: 'Mur central' },
+    { id: 'murEasy', points: '295,325 320,325 320,400 250,400 250,380 295,380 ', label: 'Mur sud' },
   ];
 
   const [images, setImages] = useState([]);
@@ -145,9 +151,9 @@ export default function BoulderScreen() {
 )
   }
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="blue" />;
-  }
+  // if (loading) {
+  //   return <ActivityIndicator size="large" color="blue" />;
+  // }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
