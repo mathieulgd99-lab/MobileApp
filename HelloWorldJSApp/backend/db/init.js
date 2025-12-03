@@ -24,17 +24,18 @@ async function initDb() {
         );
       `);
       await db.exec(`
-        CREATE TABLE IF NOT EXISTS progress (
+        CREATE TABLE IF NOT EXISTS boulder_validations (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
-          block_id TEXT NOT NULL,
-          solved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          boulder_id TEXT NOT NULL,
+          validated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           UNIQUE(user_id, block_id),
           FOREIGN KEY(user_id) REFERENCES users(id)
+          FOREIGN KEY(boulder_id) REFERENCES boulder(id)
         );
       `);
       await db.exec(`
-        CREATE TABLE IF NOT EXISTS images (
+        CREATE TABLE IF NOT EXISTS boulder (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           zone_id TEXT NOT NULL,
           grade INTEGER NOT NULL,

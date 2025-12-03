@@ -21,3 +21,8 @@ curl -v -X POST "http://192.168.190.72:3000/api/images" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiQSIsImRpc3BsYXlfbmFtZSI6IkEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjQ2NjcxOTEsImV4cCI6MTc2NTI3MTk5MX0.AHNmbrW8lkml0fl1qhSjNKf4JUG6X2bAbgCrLSKCWyM" \
   -F "image=@/home/mathieu/3A/mobilite/projetII/MobileApp/HelloWorldJSApp/backend/uploads/1000092051.jpg" \
   -F "zoneId=murDalle" -F "grade=5" -F "color=orange"
+
+
+// curl -v -X POST http://localhost:3000/api/register \
+//   -H "Content-Type: application/json" \
+//   -d '{"email":"test@example.com","password":"azerty123","display_name":"TestUser"}'

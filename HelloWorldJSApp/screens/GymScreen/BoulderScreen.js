@@ -5,7 +5,6 @@ import { ScrollView,
         Image,
         FlatList,
         View,
-        Pressable,
         ActivityIndicator,
         TouchableOpacity,
 } from 'react-native';
@@ -27,6 +26,10 @@ export default function BoulderScreen() {
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showImage, setShowImage] = useState(false)
 
   useEffect(() => {
     async function loadImages() {
@@ -64,10 +67,6 @@ export default function BoulderScreen() {
 
   
 
-  const [selectedZone, setSelectedZone] = useState(null);
-  const [selectedGrade, setSelectedGrade] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showImage, setShowImage] = useState(false)
 
 
 
@@ -128,11 +127,22 @@ export default function BoulderScreen() {
 
   const renderImage = ({item}) => {
     return (
-      <TouchableOpacity
-      onPress={() => handleClickImage(item)}>
-        <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
-      </TouchableOpacity>
-    )
+      <View>
+        <TouchableOpacity
+        onPress={() => handleClickImage(item)}>
+          <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
+        </TouchableOpacity>
+        <TouchableOpacity
+        onPress={() => toggleValidation(item.id)}
+        style={[
+          styles.validationButton,
+          { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' }
+        ]}
+        >
+        <Text style={styles.validationIcon}>✓</Text>
+        </TouchableOpacity>
+      </View>
+)
   }
 
   if (loading) {
@@ -172,7 +182,7 @@ export default function BoulderScreen() {
           data={filteredImages}
           renderItem={renderImage}
           keyExtractor={(image) => image.id}
-          scrollEnabled={false}   // empêche le conflit de scroll
+          scrollEnabled={false}
           numColumns={2}
           columnWrapperStyle={styles.row}
         />

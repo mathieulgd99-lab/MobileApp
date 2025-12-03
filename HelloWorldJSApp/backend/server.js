@@ -57,10 +57,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// curl -v -X POST http://localhost:3000/api/register \
-//   -H "Content-Type: application/json" \
-//   -d '{"email":"test@example.com","password":"azerty123","display_name":"TestUser"}'
-
 (async () => {
     const db = await initDb();
     app.post('/api/register', async (req, res) => {
@@ -141,10 +137,9 @@ const upload = multer({ storage });
           return res.status(400).json({ error: 'Missing zoneId, grade or color' });
         }
         console.log("zone : {zone_id}", zoneId, "grade : ", grade, "color:", color)
-        // chemin stocké en DB (relatif au dossier projet)
+
         const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
     
-        // inserted_by from token (req.user set by auth middleware)
         const uploadedBy = req.user?.userId || null;
     
         const sql = `
