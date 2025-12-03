@@ -8,7 +8,7 @@ import {
   Alert
  } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-import { addImage } from '../api/auth';
+import { addBoulder } from '../api/auth';
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
@@ -62,7 +62,7 @@ export default function AdminScreen() {
 
     try {
       console.log("token :",token)
-      const res = await addImage(pickedImage, zoneId, grade, color, token);
+      const res = await addBoulder(pickedImage, zoneId, grade, color, token);
       if (!res || res.error) {
         console.log("Error of image upload", res);
         return alert("Error of image upload");

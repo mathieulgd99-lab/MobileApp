@@ -123,9 +123,9 @@ const upload = multer({ storage });
       }
     });
 
-    app.post('/api/images', auth, requireAdmin, upload.single('image'), async (req, res) => {
+    app.post('/api/boulders', auth, requireAdmin, upload.single('boulder'), async (req, res) => {
       try {
-        console.log('server.js : POST /api/images');
+        console.log('server.js : POST /api/boulders');
         const file = req.file; // multer
         const { zoneId, grade, color } = req.body || {};
     
@@ -143,7 +143,7 @@ const upload = multer({ storage });
         const uploadedBy = req.user?.userId || null;
     
         const sql = `
-          INSERT INTO images (zone_id, grade, color, path, uploaded_by, original_filename, mime_type, filesize)
+          INSERT INTO boulder (zone_id, grade, color, path, uploaded_by, original_filename, mime_type, filesize)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const params = [
@@ -172,44 +172,130 @@ const upload = multer({ storage });
       }
     });
 
-    app.get('/api/images', async (req, res) => {
+    app.get('/api/boulders', async (req, res) => {
+      console.log("GET /api/boulders (public + optional user)");
+    
       try {
-        console.log("server.js : selecting all images");
-        const all = await db.all('SELECT * FROM images');
-        res.json(all);
+        let userId = null;
+    
+        // Vérifier si un token existe dans les headers (sans obliger)
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.split(" ")[1];
+          try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            userId = decoded.userId;
+          } catch (err) {
+            // Token invalide → ignore, accès public
+            console.log("Invalid token, continuing as guest");
+          }
+        }
+    
+        const boulders = await db.all(`
+          SELECT boulder.*,
+                 CASE
+                   WHEN ? IS NULL THEN 0
+                   ELSE EXISTS (
+                     SELECT 1 FROM boulder_validations iv
+                     WHERE iv.boulder_id = boulder.id AND iv.user_id = ?
+                   )
+                 END AS validated_by_user
+          FROM boulder
+          WHERE is_current = 1
+        `, [userId, userId]);
+    
+        res.json({ boulders });
+    
       } catch (err) {
-        console.error("server.js : error fetching images", err);
-        res.status(500).json({ error: "Failed to fetch images" });
+        console.error("Error fetching boulders:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+    
+
+    app.get('/api/boulders/validated', auth, async (req, res) => {
+      console.log("GET /api/boulders/validated");
+    
+      try {
+        const userId = req.user.userId;
+    
+        const boulders = await db.all(`
+          SELECT boulder.*
+          FROM boulder
+          JOIN boulder_validations iv ON iv.boulder_id = boulder.id
+          WHERE iv.user_id = ?
+        `, [userId]);
+    
+        res.json({ boulders });
+    
+      } catch (err) {
+        console.error("Error fetching validated boulders:", err);
+        res.status(500).json({ error: "Internal server error" });
       }
     });
 
-    app.patch('/api/images/:id/status', auth, requireAdmin, async (req, res) => {
+    app.post('/api/boulders/:boulderId/toggle-validation', auth, async (req, res) => {
+      console.log("POST /api/boulders/:boulderId/toggle-validation");
+    
       try {
-        const id = parseInt(req.params.id, 10);
-        if (!id) return res.status(400).json({ error: 'Invalid id' });
+        const userId = req.user.userId;
+        const { boulderId } = req.params;
     
-        const { is_current } = req.body;
-        if (typeof is_current === 'undefined') {
-          return res.status(400).json({ error: 'Missing is_current in body' });
+        const exists = await db.get(`
+          SELECT 1 FROM boulder_validations
+          WHERE user_id = ? AND boulder_id = ?
+        `, [userId, boulderId]);
+    
+        if (exists) {
+          await db.run(`
+            DELETE FROM boulder_validations
+            WHERE user_id = ? AND boulder_id = ?
+          `, [userId, boulderId]);
+    
+          return res.json({ validated: false });
         }
-        const isCurrentInt = is_current ? 1 : 0;
-        const archivedAt = isCurrentInt === 0 ? new Date().toISOString() : null;
     
-        const sql = `
-          UPDATE images
-          SET is_current = ?, archived_at = ?
-          WHERE id = ?
-        `;
-        const params = [isCurrentInt, archivedAt, id];
+        await db.run(`
+          INSERT INTO boulder_validations (user_id, boulder_id)
+          VALUES (?, ?)
+        `, [userId, boulderId]);
     
-        const result = await db.run(sql, params);
-        // result.changes may indicate rows updated depending on your sqlite wrapper
-        return res.json({ success: true, id, is_current: isCurrentInt, archived_at: archivedAt });
+        res.json({ validated: true });
+    
       } catch (err) {
-        console.error('Error in PATCH /api/images/:id/status', err);
-        return res.status(500).json({ error: 'Server error' });
+        console.error("Error toggling validation:", err);
+        res.status(500).json({ error: "Internal server error" });
       }
     });
+    
+
+    // app.patch('/api/images/:id/status', auth, requireAdmin, async (req, res) => {
+    //   try {
+    //     const id = parseInt(req.params.id, 10);
+    //     if (!id) return res.status(400).json({ error: 'Invalid id' });
+    
+    //     const { is_current } = req.body;
+    //     if (typeof is_current === 'undefined') {
+    //       return res.status(400).json({ error: 'Missing is_current in body' });
+    //     }
+    //     const isCurrentInt = is_current ? 1 : 0;
+    //     const archivedAt = isCurrentInt === 0 ? new Date().toISOString() : null;
+    
+    //     const sql = `
+    //       UPDATE images
+    //       SET is_current = ?, archived_at = ?
+    //       WHERE id = ?
+    //     `;
+    //     const params = [isCurrentInt, archivedAt, id];
+    
+    //     const result = await db.run(sql, params);
+    //     // result.changes may indicate rows updated depending on your sqlite wrapper
+    //     return res.json({ success: true, id, is_current: isCurrentInt, archived_at: archivedAt });
+    //   } catch (err) {
+    //     console.error('Error in PATCH /api/images/:id/status', err);
+    //     return res.status(500).json({ error: 'Server error' });
+    //   }
+    // });
 
 
     app.get('/api/all_images', async (req, res) => {

@@ -10,7 +10,7 @@ import { ScrollView,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getImages } from '../../api/auth';
+import { getBoulders } from '../../api/auth';
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
@@ -33,13 +33,13 @@ export default function BoulderScreen() {
 
   useEffect(() => {
     async function loadImages() {
-      console.log("Boulder.js : fetching images...");
-      const result = await getImages();
-
+      console.log("Boulder.js : fetching boulders...");
+      const result = await getBoulders();
+      console.log("images",result)
       if (!result.error) {
-        setImages(result);
+        setImages(result.boulders);
       } else {
-        console.log("Erreur getImages :", result.error);
+        console.log("Erreur getBoulders :", result.error);
       }
 
       setLoading(false);
@@ -64,10 +64,6 @@ export default function BoulderScreen() {
     { id:'13', difficulty: 13},
     { id:'14', difficulty: 14},
   ]
-
-  
-
-
 
 
   function filterImages() {

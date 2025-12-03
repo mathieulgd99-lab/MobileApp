@@ -52,10 +52,10 @@ const ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
 return extToMime[ext] || fallback;
 }
 
-export async function addImage(pickedAsset, zoneId, grade, color,token) {
+export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
 
     try {
-        console.log("Entre dans addImage auth.js")
+        console.log("Entre dans addBoulder auth.js")
         const formData = new FormData();
         const uri = pickedAsset.uri;
         const filename = pickedAsset.fileName || uri.split('/').pop();
@@ -65,7 +65,7 @@ export async function addImage(pickedAsset, zoneId, grade, color,token) {
         console.log("fileName :",filename)
         console.log("mimeType :",mimeType)
 
-        formData.append('image', {
+        formData.append('boulder', {
         uri: fileUri,
         name: filename,
         type: mimeType,
@@ -80,10 +80,10 @@ export async function addImage(pickedAsset, zoneId, grade, color,token) {
           formData._parts.forEach(p => console.log(p[0], p[1]));
         }
 
-        console.log("lance le fetch dans addImage auth.js")
+        console.log("lance le fetch dans addBoulder auth.js")
         console.log("Formdata : ",formData)
 
-        const res = await fetch(`${API_BASE}/api/images`, {
+        const res = await fetch(`${API_BASE}/api/boulders`, {
           method: 'POST',
           headers: {
               'Authorization': `Bearer ${token}`,  // Sécurisation via token
@@ -96,17 +96,17 @@ export async function addImage(pickedAsset, zoneId, grade, color,token) {
         console.log('Server error', json);
         return { error: json };
         }
-        console.log("Sort de addImage auth.js")
+        console.log("Sort de addBoulder auth.js")
         return json;
         } catch (err) {
-        console.error('addImage error', err);
+        console.error('addBoulders error', err);
         return { error: err.message || err };
         }
 }
 
-export async function getImages() {
+export async function getBoulders() {
     try {
-      const res = await fetch(`${API_BASE}/api/images`, {
+      const res = await fetch(`${API_BASE}/api/boulders`, {
         method: 'GET',
       });
   
@@ -144,9 +144,6 @@ export async function markAsCompleted() {
 
 }
 
-export async function addBoulder() {
-
-}
 
 export async function deleteBoulder() {
 
