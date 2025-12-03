@@ -117,11 +117,56 @@ export async function getBoulders() {
       }
       return json;
     } catch (err) {
-      console.error('addImage error', err);
+      console.error('getBoulders error', err);
       return { error: err.message || err };
     }
 }
 
+export async function getValidatedBoulders(token) {
+  try {
+    const res = await fetch(`${API_BASE}/api/boulders/validated`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        },
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    return json;
+  } catch (err) {
+    console.error('getValidatedBoulders error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function markBoulderAsCompleted(boulder,user, token) {
+  try {
+    const formData = new FormData();
+    formData.append('user', user);
+    formData.append('boulder', boulder);
+    const res = await fetch(`${API_BASE}/api/boulders/toggle-validation`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        },
+      body: formData,
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    return json;
+  } catch (err) {
+    console.error('markBoulderAsCompleted error', err);
+    return { error: err.message || err };
+  }
+}
 
 export async function updatePassword(newPassword) {
 
@@ -140,9 +185,6 @@ export async function deleteComment() {
 }
 
 // Soit faire un if already completed dans le backend et utiliser cette fonction pour cliquer/decliquer OU en faire une autre 
-export async function markAsCompleted() {
-
-}
 
 
 export async function deleteBoulder() {

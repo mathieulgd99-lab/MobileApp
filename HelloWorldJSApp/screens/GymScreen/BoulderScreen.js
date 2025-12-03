@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ScrollView,
         Text,
         Modal,
@@ -10,7 +10,8 @@ import { ScrollView,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders } from '../../api/auth';
+import { getBoulders, markBoulderAsCompleted, getValidatedBoulders } from '../../api/auth';
+import { AuthContext } from '../../context/AuthContext';
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
@@ -24,11 +25,13 @@ export default function BoulderScreen() {
     { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-milieu' },
     { id: 'murPorte', points: '220,50 320,50 320,120, 295,120 295,80 220,80', label: 'Mur N-E' },
     { id: 'murDevers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160', label: 'Mur E' },
-    { id: 'murDidre', points: '295,230 320,230 320,290 295,270', label: 'Mur E-milieu' },
+    { id: 'murDiedre', points: '295,230 320,230 320,290 295,270', label: 'Mur E-milieu' },
     { id: 'murAngle', points: '295,270 320,290 250,290 260,270', label: 'Mur E-bas' },
     { id :'murAngle2', points: '250,290 250,310 255,320 295,320 295,325 320,325 320,300 260,300 260,290' , label: 'Mur central' },
     { id: 'murEasy', points: '295,325 320,325 320,400 250,400 250,380 295,380 ', label: 'Mur sud' },
   ];
+
+  const {user, token} = useContext(AuthContext);
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,18 +39,25 @@ export default function BoulderScreen() {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showImage, setShowImage] = useState(false)
+  const [validatedBoulders, setValidatedBoulders] =  useState([]);
 
   useEffect(() => {
     async function loadImages() {
       console.log("Boulder.js : fetching boulders...");
       const result = await getBoulders();
-      console.log("images",result)
+      console.log("boulders",result)
       if (!result.error) {
         setImages(result.boulders);
       } else {
         console.log("Erreur getBoulders :", result.error);
       }
-
+      const validated = await getValidatedBoulders(token);
+      console.log("validated boulders",validated)
+      if (!validated.error) {
+        setValidatedBoulders(result.boulders);
+      } else {
+        console.log("Erreur getValidatedBoulders :", validated.error);
+      }
       setLoading(false);
     }
 
@@ -113,6 +123,21 @@ export default function BoulderScreen() {
     setSelectedImage(image)
     setShowImage(true)
   };
+
+  const handleValidation = async ({item}) => {
+    const result = await markBoulderAsCompleted(item,user,token);
+    if (!result.error) {
+      if (result.validated){
+        setValidatedBoulders(validatedBoulders.push(item));
+      } else {
+        let unvalidBoulder = item;
+        setValidatedBoulders(validatedBoulders.filter(element => element !== unvalidBoulder))
+      }
+    } else {
+      console.log("Erreur validate boulder :", result.error);
+    }
+
+  };
   
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
@@ -135,10 +160,10 @@ export default function BoulderScreen() {
           <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
         </TouchableOpacity>
         <TouchableOpacity
-        onPress={() => toggleValidation(item.id)}
+        onPress={() => handleValidation(item.id)}
         style={[
           styles.validationButton,
-          // { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' }
+          { backgroundColor: validatedBoulders.includes(item) ? '#BDBDBD' : '#4CAF50'}
         ]}
         >
         <Text style={styles.validationIcon}>✓</Text>
@@ -147,9 +172,9 @@ export default function BoulderScreen() {
 )
   }
 
-  // if (loading) {
-  //   return <ActivityIndicator size="large" color="blue" />;
-  // }
+  if (loading) {
+    return <ActivityIndicator size="large" color="blue" />;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

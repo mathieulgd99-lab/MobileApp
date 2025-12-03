@@ -44,7 +44,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.form}>
-      <Text> Pas connecté</Text>
+      <Text> Not connected</Text>
       <TextInput style={styles.inputText} value={email} placeholder='Email' onChangeText={setEmail}/>
       {newUser && <TextInput style={styles.inputText} value={username} placeholder='Username' onChangeText={setUsername}/>}
       <TextInput style={styles.inputText}  value={password} placeholder='********' onChangeText={setPassword}/>
@@ -53,13 +53,13 @@ export default function ProfileScreen() {
 
       {!newUser &&
       <View>
-        <Text> Pas encore de compte ?</Text>
-        <Button title="Créer un nouveau compte" onPress={() => {setNewUser(true)}}/>
+        <Text> No account ?</Text>
+        <Button title="Create a new profile" onPress={() => {setNewUser(true)}}/>
       </View>
       }
       {newUser &&
       <View>
-        <Text>Se connecter ?</Text>
+        <Text>Log in ?</Text>
         <Button title="Ecran connexion" onPress={() => {setNewUser(false)}}/>
       </View>
       }

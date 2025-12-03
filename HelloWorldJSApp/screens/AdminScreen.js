@@ -144,6 +144,13 @@ export default function AdminScreen() {
         <Picker.Item label="murTension" value="murTension" />
         <Picker.Item label="murToit" value="murToit" />
         <Picker.Item label="murDynamique" value="murDynamique" />
+        <Picker.Item label="murPorte" value="murPorte" />
+        <Picker.Item label="murDevers" value="murDevers" />
+        <Picker.Item label="murDiedre" value="murDiedre" />
+        <Picker.Item label="murAngle" value="murAngle" />
+        <Picker.Item label="murAngle2" value="murAngle2" />
+        <Picker.Item label="murDiedre" value="murDiedre" />
+        <Picker.Item label="murEasy" value="murEasy" />
       </Picker>
       <Text style={styles.smallText}>
       Actual selection : {zoneId || "No wall"}
