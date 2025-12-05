@@ -43,13 +43,13 @@ async function promptHidden(question) {
   try {
     const argv = parseArgs();
     const email = argv.email;
-    const createIfMissing = argv['create-if-missing'] || argv.create || false;
-    let password = argv.password || null;
+    const createIfMissing = argv['create'] || argv.create || false;
+    let password = argv.pw || null;
     const displayName = argv['display-name'] || argv.display_name || null;
     const dbPath = argv.db || process.env.DB_PATH || './data.db';
 
     if (!email) {
-      console.error('Usage: node promote_admin.js --email user@example.com [--create-if-missing] [--password SECRET] [--display-name "Name"] [--db ./data.db]');
+      console.error('Usage: node promote_admin.js --email user@example.com [--create] [--pw SECRET] [--display-name "Name"] [--db ./data.db]');
       process.exit(1);
     }
 

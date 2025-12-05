@@ -13,16 +13,16 @@ async function initDb() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     `);
-    // await db.exec(`
-    //     CREATE TABLE IF NOT EXISTS comments (
-    //       id INTEGER PRIMARY KEY AUTOINCREMENT,
-    //       user_id INTEGER NOT NULL,
-    //       block_id TEXT NOT NULL,
-    //       content TEXT NOT NULL,
-    //       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    //       FOREIGN KEY(user_id) REFERENCES users(id)
-    //     );
-    //   `);
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS comments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          boulder_id TEXT NOT NULL,
+          content TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+      `);
       await db.exec(`
         CREATE TABLE IF NOT EXISTS boulder (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

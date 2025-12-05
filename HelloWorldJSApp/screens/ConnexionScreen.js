@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { useState } from 'react'
 
-export default function ProfileScreen() {
+export default function ConnexionScreen() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

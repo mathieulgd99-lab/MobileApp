@@ -27,10 +27,11 @@ export async function register(email, password, display_name) {
     console.log("auth.js : await of register in auth.js")
     const res = await fetch(`${API_BASE}/api/register`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
+      headers: {'Content-Type' : 'application/json'},
+      body: JSON.stringify({"email" : email,
+              "password" : password,
+              "display_name" : display_name
+      })
     });
     const result = await res.json();
     console.log("auth.js : end of register in auth.js")
@@ -109,12 +110,13 @@ export async function getBoulders() {
       const res = await fetch(`${API_BASE}/api/boulders`, {
         method: 'GET',
       });
-  
+      console.log("sortie fetch")
       const json = await res.json();
       if (!res.ok) {
         console.log('Server error', json);
         return { error: json };
       }
+      console.log("boulders : ",json)
       return json;
     } catch (err) {
       console.error('getBoulders error', err);
@@ -136,6 +138,7 @@ export async function getValidatedBoulders(token) {
       console.log('Server error', json);
       return { error: json };
     }
+    console.log("validated boulders :",json)
     return json;
   } catch (err) {
     console.error('getValidatedBoulders error', err);
@@ -143,19 +146,67 @@ export async function getValidatedBoulders(token) {
   }
 }
 
-export async function markBoulderAsCompleted(boulder,user, token) {
+export async function markBoulderAsCompleted(boulderId, token) {
   try {
-    const formData = new FormData();
-    formData.append('user', user);
-    formData.append('boulder', boulder);
+    console.log("entrée markboulder")
+    console.log("appel fecth", token)
     const res = await fetch(`${API_BASE}/api/boulders/toggle-validation`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
         },
-      body: formData,
+      body: JSON.stringify({ boulder: boulderId })
     });
+    console.log("sortie fecth")
+    const json = await res.json();
+    console.log("fetching")
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("res markboulderascompleted : ",json)
+    return json;
+  } catch (err) {
+    console.error('markBoulderAsCompleted error', err);
+    return { error: err.message || err };
+  }
+}
 
+export async function addComment(token, commentary, boulder_id) {
+  try {
+    console.log("Upload new comment")
+    const res = await fetch(`${API_BASE}/api/comment/${encodeURIComponent(boulder_id)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+        },
+      body: JSON.stringify({comment : commentary})
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("res comment : ",json)
+    return json;
+  } catch (err) {
+    console.error('Comment error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function deleteComment(token, commentId) {
+  try {
+    console.log("Delete comment")
+    const res = await fetch(`${API_BASE}/api/comment`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization' : `Bearer ${token}`,
+      },
+      body: JSON.stringify({"commentId" : commentId})
+    });
     const json = await res.json();
     if (!res.ok) {
       console.log('Server error', json);
@@ -163,7 +214,31 @@ export async function markBoulderAsCompleted(boulder,user, token) {
     }
     return json;
   } catch (err) {
-    console.error('markBoulderAsCompleted error', err);
+    console.error('Delete comment error', err);
+    return { error: err.message || err };
+  }
+}
+
+
+export async function getComment(token, boulderId) {
+  try {
+    console.log("load comment 3", boulderId)
+    const url = `${API_BASE}/api/comment/${encodeURIComponent(boulderId)}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization' : `Bearer ${token}`,
+      },
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("All comments :", json)
+    return json;
+  } catch (err) {
+    console.error('Get comment error', err);
     return { error: err.message || err };
   }
 }
@@ -173,14 +248,6 @@ export async function updatePassword(newPassword) {
 }
 
 export async function updateDisplayName(newName) {
-
-}
-
-export async function comment() {
-
-}
-
-export async function deleteComment() {
 
 }
 

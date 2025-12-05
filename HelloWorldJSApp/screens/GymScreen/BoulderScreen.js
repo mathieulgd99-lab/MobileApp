@@ -7,10 +7,16 @@ import { ScrollView,
         View,
         ActivityIndicator,
         TouchableOpacity,
+        Alert,
+        StyleSheet,
+        SafeAreaView,
+        KeyboardAvoidingView,
+        Platform,
+        TextInput
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders, markBoulderAsCompleted, getValidatedBoulders } from '../../api/auth';
+import { getBoulders, markBoulderAsCompleted, getValidatedBoulders, getComment, deleteComment, addComment } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
@@ -33,36 +39,47 @@ export default function BoulderScreen() {
 
   const {user, token} = useContext(AuthContext);
 
-  const [images, setImages] = useState([]);
+  const [boulders, setBoulders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showImage, setShowImage] = useState(false)
   const [validatedBoulders, setValidatedBoulders] =  useState([]);
+  const [comments, setComments] = useState([]);
+  const [commentsModal, setCommentsModal] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [postingComment, setPostingComment] = useState(false);
+
+
+
+  async function loadBoulders() {
+    console.log("Boulder.js : fetching boulders...");
+    const result = await getBoulders();
+    if (!result.error) {
+      setBoulders(result.boulders);
+    } else {
+      console.log("Erreur getBoulders :", result.error);
+    }
+    const validated = await getValidatedBoulders(token);
+    console.log("boulders", boulders)
+    console.log("validated boulders",validated)
+    if (!validated.error) {
+      setValidatedBoulders(validated.boulders);
+    } else {
+      console.log("Erreur getValidatedBoulders :", validated.error);
+    }
+  }
+
 
   useEffect(() => {
-    async function loadImages() {
-      console.log("Boulder.js : fetching boulders...");
-      const result = await getBoulders();
-      console.log("boulders",result)
-      if (!result.error) {
-        setImages(result.boulders);
-      } else {
-        console.log("Erreur getBoulders :", result.error);
-      }
-      const validated = await getValidatedBoulders(token);
-      console.log("validated boulders",validated)
-      if (!validated.error) {
-        setValidatedBoulders(result.boulders);
-      } else {
-        console.log("Erreur getValidatedBoulders :", validated.error);
-      }
+    (async () => {
+      await loadBoulders();
+      console.log("fin load")
       setLoading(false);
-    }
-
-    loadImages();
+    })();
   }, []);
+
 
   const grades = [
     { id:'1', difficulty: 1},
@@ -82,24 +99,24 @@ export default function BoulderScreen() {
   ]
 
 
-  function filterImages() {
-    let res = images
+  function filterboulders() {
+    let res = boulders
     if (selectedZone && selectedGrade) {
-      res = images.filter(img => selectedZone === img.zoneId && selectedGrade === img.grade)
+      res = boulders.filter(img => selectedZone === img.zoneId && selectedGrade === img.grade)
     } else if (selectedZone) {
-      res = images.filter(img => selectedZone === img.zoneId )
+      res = boulders.filter(img => selectedZone === img.zoneId )
 
     } else if (selectedGrade) {
-      res = images.filter(img => selectedGrade === img.grade )
+      res = boulders.filter(img => selectedGrade === img.grade )
     }
 
     return res
   }
-  const filteredImages = filterImages()
+  const filteredboulders = filterboulders()
 
   function countGrade(difficulty) {
     let res = 0;
-    images.forEach((image) => {
+    boulders.forEach((image) => {
       if (image.grade === difficulty) {
         res++
       }
@@ -109,6 +126,7 @@ export default function BoulderScreen() {
 
   function handleCloseModal() {
     setShowImage(false);
+    setSelectedImage(null);
   }
 
   const handleClickGrade = (gradeDifficulty) => {
@@ -124,14 +142,20 @@ export default function BoulderScreen() {
     setShowImage(true)
   };
 
-  const handleValidation = async ({item}) => {
-    const result = await markBoulderAsCompleted(item,user,token);
+  const handleValidation = async (item) => {
+    console.log("Appel handleValidation")
+    if (!token) {
+      Alert.alert("Error", "You need to be connected");
+      return
+    }
+    console.log("Appel markboulderas")
+    const result = await markBoulderAsCompleted(item.id,token);
+    console.log("sortie markboulderas, result :",result)
     if (!result.error) {
       if (result.validated){
-        setValidatedBoulders(validatedBoulders.push(item));
+        setValidatedBoulders([...validatedBoulders, item]);
       } else {
-        let unvalidBoulder = item;
-        setValidatedBoulders(validatedBoulders.filter(element => element !== unvalidBoulder))
+        setValidatedBoulders(validatedBoulders.filter(element => element.id !== item.id))
       }
     } else {
       console.log("Erreur validate boulder :", result.error);
@@ -152,121 +176,315 @@ export default function BoulderScreen() {
     )
   }
 
-  const renderImage = ({item}) => {
+  const renderBoulder = ({item}) => {
     return (
       <View>
         <TouchableOpacity
         onPress={() => handleClickImage(item)}>
           <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={handleOpenComments}
+          style={localStyles.commentButton}
+        >
+          <Text style={localStyles.commentBubble}>💬</Text>
+          <View style={localStyles.commentCountBox}>
+            <Text style={localStyles.commentCountText}>{commentCount}</Text>
+          </View>
+        </TouchableOpacity> */}
         <TouchableOpacity
-        onPress={() => handleValidation(item.id)}
+        onPress={() => handleValidation(item)}
         style={[
           styles.validationButton,
-          { backgroundColor: validatedBoulders.includes(item) ? '#BDBDBD' : '#4CAF50'}
+          { backgroundColor: validatedBoulders.some(b => b.id === item.id) ? '#4CAF50' : '#BDBDBD'}
         ]}
         >
         <Text style={styles.validationIcon}>✓</Text>
         </TouchableOpacity>
       </View>
-)
+    )
   }
+
+  async function handleOpenComments() {
+    console.log("loadComments1")
+    if (!selectedImage) {
+      console.log("no image");
+      return;
+    }
+    console.log("loadComments2")
+    const result = await getComment(token,selectedImage.id);
+    if (!result.error) {
+      setComments(result.comments);
+      setCommentsModal(true);
+    } else {
+      console.log("Erreur getBoulders :", result.error);
+    }
+    console.log("out handle comment")
+  }
+  
+  async function handleAddComment() {
+    if (!newComment.trim()) {
+      Alert.alert('Erreur', "Empty comment");
+      return;
+    }
+    setPostingComment(true);
+    try {
+      const res = await addComment(token, newComment.trim(), selectedImage.id);
+      if (!res.error) {
+        // on recharge les commentaires (garantit la cohérence)
+        await handleOpenComments(selectedImage.id);
+        setNewComment('');
+      } else {
+        Alert.alert('Erreur', res.error || 'Impossible de poster le commentaire');
+      }
+    } catch (err) {
+      console.error('addComment error', err);
+      Alert.alert('Erreur', 'Erreur réseau');
+    } finally {
+      setPostingComment(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    if (!token) {
+      Alert.alert('Erreur', "Vous devez être connecté");
+      return;
+    }
+    Alert.alert(
+      'Confirmer',
+      'Supprimer ce commentaire ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer', style: 'destructive', onPress: async () => {
+            try {
+              const res = await deleteComment(commentId, token);
+              if (!res.error) {
+                // reload comments
+                await loadComments(selectedImage.id);
+              } else {
+                Alert.alert('Erreur', res.error || 'Impossible de supprimer');
+              }
+            } catch (err) {
+              console.error('deleteComment error', err);
+              Alert.alert('Erreur', 'Erreur réseau');
+            }
+          }
+        }
+      ]
+    );
+  }
+
+  const commentCount = (selectedImage && comments) ? comments.length : 0;
+
 
   if (loading) {
     return <ActivityIndicator size="large" color="blue" />;
   }
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Svg height="500" width="350" style={styles.map}>
-        {zones.map((zone) => (
-          <Polygon
-            key={zone.id}
-            points={zone.points}
-            fill={selectedZone === zone.id ? '#8bc34a' : '#808080'}
-            stroke="#fff"
-            strokeWidth="1"
-            onPressOut={() => handleClickZone(zone.id)}
-          />
-        ))}
-      </Svg>
-      <View style={styles.container}>
-        <Text style={styles.text}>
-          Boulders
-        </Text>
-      </View>
-  
-      <FlatList
-        data={grades}
-        horizontal
-        keyExtractor={(grade) => grade.id}
-        renderItem={renderGrade}
-        scrollEnabled={true}   // TODO : aggrandir la zone de scroll
-        extraData={selectedGrade}
-      />
+return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Svg height="500" width="350" style={styles.map}>
+          {zones.map((zone) => (
+            <Polygon
+              key={zone.id}
+              points={zone.points}
+              fill={selectedZone === zone.id ? '#8bc34a' : '#808080'}
+              stroke="#fff"
+              strokeWidth="1"
+              onPressOut={() => handleClickZone(zone.id)}
+            />
+          ))}
+        </Svg>
 
-      <FlatList
-          data={filteredImages}
-          renderItem={renderImage}
-          keyExtractor={(image) => image.id}
+        <View style={styles.container}>
+          <Text style={styles.text}>Boulders</Text>
+        </View>
+
+        <FlatList
+          data={grades}
+          horizontal
+          keyExtractor={(grade) => grade.id}
+          renderItem={renderGrade}
+          scrollEnabled={true}
+          extraData={selectedGrade}
+        />
+
+        <FlatList
+          data={filteredboulders}
+          renderItem={renderBoulder}
+          keyExtractor={(image) => String(image.id)}
           scrollEnabled={false}
           numColumns={2}
           columnWrapperStyle={styles.row}
         />
 
+        {/* Image full-screen modal */}
+        {showImage && selectedImage && (
+          <Modal visible={showImage} onRequestClose={handleCloseModal} animationType="fade">
+            <View style={{ flex: 1, backgroundColor: '#000' }}>
+              <View style={styles.header}>
+                <Text style={styles.header_grade}>{selectedImage.grade}</Text>
+              </View>
 
-      {/* Show the image on full screen when we click on one */}
-      {showImage && (      
-        <Modal
-        visible={showImage}
-        onRequestClose={handleCloseModal}
-        animationType="fade"
-      >
-        <View>
-          <View style={styles.header}>
-            <Text style={styles.header_grade}>{selectedImage.grade}</Text>
-          </View>
-          
-          <Image source={{ uri: `${API_BASE}/${selectedImage.path}` }} style={styles.image_zoomed}/>
-          <View style={[
-                styles.footer,
-                { backgroundColor: selectedImage?.color || '#000' }
-              ]}>
-                <Text style={[
-                  styles.footerText,
-                ]}>
-                  Ouvert depuis : 
-                </Text>
-
-                <Text style={[
-                  styles.footerText,
-                ]}>
-                  Points : 
-                </Text>
-
-                <Text style={[
-                  styles.footerText,
-                ]}>
-                  Tops : 
-                </Text>
-
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Image source={{ uri: `${API_BASE}/${selectedImage.path}` }} style={styles.image_zoomed} />
+                {/* Bouton commentaires en bas gauche de l'image */}
                 <TouchableOpacity
-                  onPress={handleCloseModal}
-                  style={[
-                    styles.footerButton,
-                  ]}
+                  activeOpacity={0.9}
+                  onPress={handleOpenComments}
+                  style={localStyles.commentButton}
                 >
-                  <Text style={[
-                    styles.footerButtonText
-                  ]}>
-                    Fermer
-                  </Text>
+                  <Text style={localStyles.commentBubble}>💬</Text>
+                  <View style={localStyles.commentCountBox}>
+                    <Text style={localStyles.commentCountText}>{commentCount}</Text>
+                  </View>
                 </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-      )
-      }
-    </ScrollView>
-);
+                <TouchableOpacity
+                onPress={() => handleValidation(selectedImage)}
+                style={[
+                  styles.validationButton,
+                  { backgroundColor: validatedBoulders.some(b => b.id === selectedImage.id) ? '#4CAF50' : '#BDBDBD'}
+                ]}
+                >
+                <Text style={styles.validationIcon}>✓</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={[styles.footer, { backgroundColor: selectedImage?.color || '#000' }]}>
+                <Text style={styles.footerText}>Ouvert depuis :</Text>
+                <Text style={styles.footerText}>Points :</Text>
+                <Text style={styles.footerText}>Tops :</Text>
+
+                <TouchableOpacity onPress={handleCloseModal} style={[styles.footerButton]}>
+                  <Text style={[styles.footerButtonText]}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {/* Comments Modal */}
+        <Modal visible={commentsModal} animationType="slide" onRequestClose={() => setCommentsModal(false)}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={{ flex: 1, padding: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Commentaires</Text>
+                <TouchableOpacity onPress={() => setCommentsModal(false)}>
+                  <Text style={{ color: '#007AFF' }}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <FlatList
+                  data={comments}
+                  keyExtractor={(c) => String(c.id)}
+                  renderItem={({ item }) => (
+                    <View style={localStyles.commentRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: '600' }}>{item.user_name || `User ${item.user_id}`}</Text>
+                        <Text style={{ marginTop: 4 }}>{item.content}</Text>
+                        <Text style={{ marginTop: 6, fontSize: 12, color: '#666' }}>{item.created_at}</Text>
+                      </View>
+                      { (user?.userId === item.user_id || user?.role === 'admin') && (
+                        <TouchableOpacity onPress={() => handleDeleteComment(item.id)} style={localStyles.deleteButton}>
+                          <Text style={localStyles.deleteButtonText}>Supprimer</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                  ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 12 }}>Aucun commentaire</Text>}
+                />
+              </View>
+
+              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  <TextInput
+                    value={newComment}
+                    onChangeText={setNewComment}
+                    placeholder="Write a new comment..."
+                    style={localStyles.input}
+                    multiline
+                  />
+                  <TouchableOpacity onPress={handleAddComment} style={localStyles.sendButton} disabled={postingComment}>
+                    <Text style={{ color: '#fff' }}>{postingComment ? '...' : 'Send'}</Text>
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+            </View>
+          </SafeAreaView>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
+
+const localStyles = StyleSheet.create({
+  commentButton: {
+    position: 'absolute',
+    left: 16,
+    bottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 20,
+  },
+  commentBubble: {
+    fontSize: 20,
+    marginRight: 6,
+  },
+  commentCountBox: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  commentCountText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000',
+  },
+  commentRow: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    alignItems: 'center',
+  },
+  deleteButton: {
+    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: '#ff5252',
+    borderRadius: 6,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 12,
+  },
+  input: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 120,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 8,
+    backgroundColor: '#fff',
+  },
+  sendButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+});

@@ -18,6 +18,11 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.use((req, res, next) => {
+  console.log("REQUEST:", req.method, req.url);
+  next();
+});
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 3000;
 
@@ -59,6 +64,8 @@ const upload = multer({ storage });
 
 (async () => {
     const db = await initDb();
+
+
     app.post('/api/register', async (req, res) => {
         console.log("server.js : start register ")
         const { email, password, display_name } = req.body || {};
@@ -176,36 +183,26 @@ const upload = multer({ storage });
       console.log("GET /api/boulders (public + optional user)");
     
       try {
-        let userId = null;
+        // let userId = null;
     
-        // Vérifier si un token existe dans les headers (sans obliger)
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith("Bearer ")) {
-          const token = authHeader.split(" ")[1];
-          try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            userId = decoded.userId;
-          } catch (err) {
-            // Token invalide → ignore, accès public
-            console.log("Invalid token, continuing as guest");
-          }
-        }
+        // // Vérifier si un token existe dans les headers (sans obliger)
+        // const authHeader = req.headers.authorization;
+        // if (authHeader && authHeader.startsWith("Bearer ")) {
+        //   const token = authHeader.split(" ")[1];
+        //   try {
+        //     const decoded = jwt.verify(token, JWT_SECRET);
+        //     userId = decoded.userId;
+        //   } catch (err) {
+        //     // Token invalide → ignore, accès public
+        //     console.log("Invalid token, continuing as guest");
+        //   }
+        // }
     
         const boulders = await db.all(`
-          SELECT boulder.*,
-                 CASE
-                   WHEN ? IS NULL THEN 0
-                   ELSE EXISTS (
-                     SELECT 1 FROM boulder_validations iv
-                     WHERE iv.boulder_id = boulder.id AND iv.user_id = ?
-                   )
-                 END AS validated_by_user
-          FROM boulder
-          WHERE is_current = 1
-        `, [userId, userId]);
-    
+          SELECT *
+          FROM boulder`);
         res.json({ boulders });
-    
+        
       } catch (err) {
         console.error("Error fetching boulders:", err);
         res.status(500).json({ error: "Internal server error" });
@@ -218,7 +215,8 @@ const upload = multer({ storage });
     
       try {
         const userId = req.user.userId;
-        if (!userId) {res.json({})
+        if (!userId) {
+          return res.json({ boulders: [] });
         } else {
           const boulders = await db.all(`
             SELECT boulder.*
@@ -240,8 +238,12 @@ const upload = multer({ storage });
     
       try {
         const userId = req.user.userId;
-        const { boulderId } = req.boulder.id;
-    
+        const boulderId = req.body.boulder;
+
+        if (!boulderId) {
+          return res.status(400).json({ error: "Missing boulder id" });
+        }
+
         const exists = await db.get(`
           SELECT 1 FROM boulder_validations
           WHERE user_id = ? AND boulder_id = ?
@@ -269,41 +271,105 @@ const upload = multer({ storage });
       }
     });
 
-
-    app.get('/api/all_images', async (req, res) => {
+    app.get('/api/comment/:boulderId', auth, async (req,res) => {
       try {
-        console.log("server.js : selecting all users");
-        const all = await db.all('SELECT * FROM images');
-        res.json(all);
+        console.log("serv 1")
+        const boulderId = req.params.boulderId;
+        console.log("serv 2")
+        if (!boulderId) return res.status(400).json({ error: 'Missing boulderId' });
+
+        const comments = await db.all('SELECT * from comments WHERE boulder_id = ? ', [boulderId]);
+        console.log("serv 3")
+
+        res.json({comments})
+
       } catch (err) {
-        console.error("server.js : error fetching users", err);
-        res.status(500).json({ error: "Failed to fetch users" });
+        console.error("Error fetching comments:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    })
+
+    app.post('/api/comment/:boulderId', auth, async (req, res) => {
+      try {
+        const userId = req.user.userId;
+        const boulderId = req.params.boulderId;
+        const content = (req.body.comment ?? '').trim();
+        console.log("post comment 1")
+        console.log("POST /api/comment", { userId, boulderId, content });
+        if (!boulderId) {
+          return res.status(400).json({ error: 'Missing boulder id' });
+        }
+        if (!content) {
+          return res.status(400).json({ error: 'Missing comment' });
+        }
+        if (content.length > 1000) {
+          return res.status(400).json({ error: 'Comment too long (max 1000 chars)' });
+        }
+    
+        const result = await db.run(
+          `INSERT INTO comments (user_id, boulder_id, content) VALUES (?, ?, ?)`,
+          [userId, boulderId, content]
+        );
+        console.log("post comment 2")
+
+        const insertedId = result?.lastID;
+        let insertedRow = null;
+        if (insertedId) {
+          console.log("post comment 3")
+
+          insertedRow = await db.get(`SELECT id, user_id, boulder_id AS boulder, content, created_at FROM comments WHERE id = ?`, [insertedId]);
+        } else {
+          console.log("post comment 4")
+
+          // fallback : récupérer le dernier commentaire de cet utilisateur sur ce bloc (moins fiable en cas de concurrence)
+          insertedRow = await db.get(
+            `SELECT id, user_id, boulder_id AS boulder, content, created_at
+             FROM comments
+             WHERE user_id = ? AND boulder_id = ?
+             ORDER BY id DESC
+             LIMIT 1`,
+            [userId, boulderId]
+          );
+        }
+    
+        return res.status(201).json({ success: true, comment: insertedRow });
+      } catch (err) {
+        console.error('Error posting comment:', err);
+        return res.status(500).json({ error: 'Internal server error' });
       }
     });
-  
-  //   app.post('/api/comment', async (req,res) => {
-  //     const {email, message, boulderId} = req.body;
-  //     const userId = await db.get('SELECT id FROM users WHERE email = ?', [email]);
-  //     try {
-  //       const result = await db.run('INSERT INTO comments (user_id,block_id,content) VALUES (?,?,?)', [userId, boulderId, message])
 
-
-  //       const token = jwt.sign({ userId: user.id, email }, JWT_SECRET, { expiresIn: '7d' });
-  //       res.json({ token, user: { id: user.id, email, display_name: user.display_name } });
-  //     } catch (err) {
-  //       res.status(400).json({ error: 'Invalid comment'});
-  //     }
-
-  // })
-
-  // app.get('api/comment/:bloc_id', async (req,res) => {
-
-  // })
-
-  // // To mark a boulder as did
-  // app.get('api/progress/:bloc_id', async (req,res) => {
-
-  // })
+    app.delete('/api/comment', auth, async (req, res) => {
+      try {
+        const commentId = parseInt(req.params.id, 10);
+        if (Number.isNaN(commentId)) {
+          return res.status(400).json({ error: 'Invalid comment id' });
+        }
+    
+        // Récupère le commentaire
+        const comment = await db.get(`SELECT id, user_id, block_id, content, created_at FROM comments WHERE id = ?`, [commentId]);
+        if (!comment) {
+          return res.status(404).json({ error: 'Comment not found' });
+        }
+    
+        const requesterId = req.user.userId;
+        const requesterRole = req.user.role;
+        const isOwner = requesterId === comment.user_id;
+        const isAdmin = requesterRole === 'admin';
+    
+        if (!isOwner && !isAdmin) {
+          return res.status(403).json({ error: 'Forbidden: not allowed to delete this comment' });
+        }
+    
+        await db.run(`DELETE FROM comments WHERE id = ?`, [commentId]);
+    
+        return res.json({ success: true, deletedId: commentId });
+      } catch (err) {
+        console.error('Error deleting comment:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+    
 
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     
