@@ -50,6 +50,7 @@ export default function BoulderScreen() {
   const [commentsModal, setCommentsModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [postingComment, setPostingComment] = useState(false);
+  // const [countComment, setCountComment] = useState(0);
 
 
 
@@ -140,6 +141,8 @@ export default function BoulderScreen() {
   const handleClickImage = (image) => {
     setSelectedImage(image)
     setShowImage(true)
+    handleOpenComments();
+
   };
 
   const handleValidation = async (item) => {
@@ -246,25 +249,27 @@ export default function BoulderScreen() {
     }
   }
 
-  async function handleDeleteComment(commentId) {
+  async function handleDeleteComment(comment) {
     if (!token) {
       Alert.alert('Erreur', "Vous devez être connecté");
       return;
     }
+    console.log("comment recu:",comment)
+    console.log("comment id :",comment.id)
     Alert.alert(
-      'Confirmer',
-      'Supprimer ce commentaire ?',
+      'Confirm',
+      'Delete this comment? ?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Supprimer', style: 'destructive', onPress: async () => {
+          text: 'Delete', style: 'destructive', onPress: async () => {
             try {
-              const res = await deleteComment(commentId, token);
+              const res = await deleteComment(token, comment.id);
               if (!res.error) {
                 // reload comments
-                await loadComments(selectedImage.id);
+                await handleOpenComments(selectedImage.id);
               } else {
-                Alert.alert('Erreur', res.error || 'Impossible de supprimer');
+                Alert.alert('Erreur', res.error || 'Impossible to delete');
               }
             } catch (err) {
               console.error('deleteComment error', err);
@@ -389,7 +394,7 @@ return (
                         <Text style={{ marginTop: 6, fontSize: 12, color: '#666' }}>{item.created_at}</Text>
                       </View>
                       { (user?.userId === item.user_id || user?.role === 'admin') && (
-                        <TouchableOpacity onPress={() => handleDeleteComment(item.id)} style={localStyles.deleteButton}>
+                        <TouchableOpacity onPress={() => handleDeleteComment(item)} style={localStyles.deleteButton}>
                           <Text style={localStyles.deleteButtonText}>Supprimer</Text>
                         </TouchableOpacity>
                       )}

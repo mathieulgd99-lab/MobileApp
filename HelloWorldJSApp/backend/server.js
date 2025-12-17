@@ -19,7 +19,7 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use((req, res, next) => {
-  console.log("REQUEST:", req.method, req.url);
+  console.log(">>> SERVER RECEIVED:", req.method, req.url);
   next();
 });
 
@@ -339,15 +339,18 @@ const upload = multer({ storage });
       }
     });
 
-    app.delete('/api/comment', auth, async (req, res) => {
+    app.delete('/api/comment/:commentId', auth, async (req, res) => {
       try {
-        const commentId = parseInt(req.params.id, 10);
-        if (Number.isNaN(commentId)) {
+        console.log("serv: DELETE /api/comment/:commentId hit");
+        console.log("req.user:", req.user); 
+        const commentId = parseInt(req.params.commentId, 10);
+        console.log("commentID : ",commentId)
+        if (!commentId) {
           return res.status(400).json({ error: 'Invalid comment id' });
         }
     
         // Récupère le commentaire
-        const comment = await db.get(`SELECT id, user_id, block_id, content, created_at FROM comments WHERE id = ?`, [commentId]);
+        const comment = await db.get(`SELECT id, user_id, boulder_id, content, created_at FROM comments WHERE id = ?`, [commentId]);
         if (!comment) {
           return res.status(404).json({ error: 'Comment not found' });
         }

@@ -20,29 +20,26 @@ export default function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false); // false => afficher uniquement non-archivés
 
-  useEffect(() => {
-    let mounted = true;
 
-    async function loadBoulders() {
-      setLoading(true);
-      try {
-        const result = await getValidatedBoulders(token);
-
-        if (!result.error && mounted) {
-          setValidatedBoulders(result.boulders);
-        } else if (result.error) {
-          console.log('Erreur getValidatedBoulders :', result.error);
-        }
-      } catch (err) {
-        console.log('loadBoulders error', err);
-      } finally {
-        if (mounted) setLoading(false);
+  async function loadBoulders() {
+    setLoading(true);
+    try {
+      const result = await getValidatedBoulders(token);
+      console.log("History page : validated boulders",result)
+      if (!result.error && mounted) {
+        setValidatedBoulders(result.boulders);
+      } else if (result.error) {
+        console.log('Erreur getValidatedBoulders :', result.error);
       }
+    } catch (err) {
+      console.log('loadBoulders error', err);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadBoulders();
-
-    return () => { mounted = false; };
   }, [token]);
 
   // Filtre selon showAll
@@ -52,16 +49,24 @@ export default function HistoryScreen() {
 
   const toggleShowAll = () => setShowAll(prev => !prev);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.item}>
-      <Text style={styles.itemTitle}> Grade: {item.grade}</Text>
-      <Text style={styles.itemSub}>Zone: {item.zone_id}</Text>
-      <Text style={styles.itemSub}>
-        { item.archived_at ? `Archived : ${item.archived_at}` : 'Current' }
-      </Text>
-      <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
-    </View>
-  );
+  const renderBoulder = ({ item }) => {
+    return (
+      <View style={styles.item}>
+        <View>
+          <TouchableOpacity
+          onPress={() => handleClickBoulder(item)}>
+            <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.itemTitle}> Grade: {item.grade}</Text>
+        <Text style={styles.itemSub}>Zone: {item.zone_id}</Text>
+        <Text style={styles.itemSub}>
+          { item.archived_at ? `Archived : ${item.archived_at}` : 'Current' }
+        </Text>
+        <Image source={{ uri: `${API_BASE}/${item.path}` }} style={[styles.image, {borderColor: item.color}]}/>
+      </View>
+    )
+  };
 
   return (
     <View style={styles.container}>
@@ -85,17 +90,9 @@ export default function HistoryScreen() {
       {loading ? (
         <ActivityIndicator size="large" />
       ) : (
-        // <FlatList
-        //   data={visibleBoulders}
-        //   keyExtractor={(item) => String(item.id)}
-        //   renderItem={renderItem}
-        //   contentContainerStyle={styles.list}
-        //   ListEmptyComponent={<Text style={styles.empty}>Aucun boulder trouvé.</Text>}
-        // />
-
         <FlatList
         data={visibleBoulders}
-        renderItem={renderItem}
+        renderItem={renderBoulder}
         keyExtractor={(boulder) => boulder.id}
         scrollEnabled={false}
         numColumns={2}

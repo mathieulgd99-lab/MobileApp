@@ -199,15 +199,15 @@ export async function addComment(token, commentary, boulder_id) {
 
 export async function deleteComment(token, commentId) {
   try {
-    console.log("Delete comment")
-    const res = await fetch(`${API_BASE}/api/comment`, {
+    console.log("Delete comment", commentId);
+    const res = await fetch(`${API_BASE}/api/comment/${encodeURIComponent(commentId)}`, {
       method: 'DELETE',
       headers: {
-        'Authorization' : `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({"commentId" : commentId})
     });
     const json = await res.json();
+    console.log("sortie fetch delete json: ", json)
     if (!res.ok) {
       console.log('Server error', json);
       return { error: json };
