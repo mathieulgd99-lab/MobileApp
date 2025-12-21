@@ -292,10 +292,11 @@ const upload = multer({ storage });
     app.post('/api/comment/:boulderId', auth, async (req, res) => {
       try {
         const userId = req.user.userId;
+        const userName = req.user.display_name
         const boulderId = req.params.boulderId;
         const content = (req.body.comment ?? '').trim();
         console.log("post comment 1")
-        console.log("POST /api/comment", { userId, boulderId, content });
+        console.log("POST /api/comment", { userId, userName, boulderId, content });
         if (!boulderId) {
           return res.status(400).json({ error: 'Missing boulder id' });
         }
@@ -307,8 +308,8 @@ const upload = multer({ storage });
         }
     
         const result = await db.run(
-          `INSERT INTO comments (user_id, boulder_id, content) VALUES (?, ?, ?)`,
-          [userId, boulderId, content]
+          `INSERT INTO comments (user_id, user_name, boulder_id, content) VALUES (?, ?, ?, ?)`,
+          [userId, userName, boulderId, content]
         );
         console.log("post comment 2")
 

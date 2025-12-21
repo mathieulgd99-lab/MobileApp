@@ -272,11 +272,11 @@ return (
                   renderItem={({ item }) => (
                     <View style={localStyles.commentRow}>
                       <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: '600' }}>{item.user_name || `User ${item.user_id}`}</Text>
+                        <Text style={{ fontWeight: '600' }}>{item.user_name}</Text>
                         <Text style={{ marginTop: 4 }}>{item.content}</Text>
                         <Text style={{ marginTop: 6, fontSize: 12, color: '#666' }}>{item.created_at}</Text>
                       </View>
-                      { (user?.userId === item.user_id || user?.role === 'admin') && (
+                      { (user?.display_name === item.user_name || user?.role === 'admin') && (
                         <TouchableOpacity onPress={() => removeComment(item.id)} style={localStyles.deleteButton}>
                           <Text style={localStyles.deleteButtonText}>Supprimer</Text>
                         </TouchableOpacity>
@@ -297,7 +297,10 @@ return (
                     multiline
                   />
                   <TouchableOpacity
-                    onPress={() => addNewComment(newComment)}
+                    onPress={async () => {
+                      await addNewComment(newComment);
+                      setNewComment('');
+                    }}
                     style={localStyles.sendButton}
                     disabled={postingComment}>
                     <Text style={{ color: '#fff' }}>{postingComment ? '...' : 'Send'}</Text>

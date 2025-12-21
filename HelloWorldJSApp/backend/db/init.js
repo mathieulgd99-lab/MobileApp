@@ -17,6 +17,7 @@ async function initDb() {
         CREATE TABLE IF NOT EXISTS comments (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id INTEGER NOT NULL,
+          user_name TEXT NOT NULL,
           boulder_id TEXT NOT NULL,
           content TEXT NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
