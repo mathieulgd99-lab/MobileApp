@@ -231,7 +231,7 @@ return (
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                onPress={() => handleValidation(selectedImage)}
+                onPress={() => toggleValidation(selectedImage)}
                 style={[
                   styles.validationButton,
                   { backgroundColor: validatedBoulders.some(b => b.id === selectedImage.id) ? '#4CAF50' : '#BDBDBD'}

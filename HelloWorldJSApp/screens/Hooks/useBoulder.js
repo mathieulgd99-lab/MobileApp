@@ -55,16 +55,14 @@ export function useBoulders(token) {
         throw new Error('Token required to validate a boulder');
       }
       try {
-        const res = await markBoulderAsCompleted(token,boulder.id);
+        const res = await markBoulderAsCompleted(boulder.id, token);
         if (!res.error) {
           if (res.validated) {
-            // ajout si absent
             setValidatedBoulders((prev) => {
               if (prev.some((b) => b.id === boulder.id)) return prev;
               return [...prev, boulder];
             });
           } else {
-            // suppression si présent
             setValidatedBoulders((prev) => prev.filter((b) => b.id !== boulder.id));
           }
           return { ok: true, validated: res.validated };

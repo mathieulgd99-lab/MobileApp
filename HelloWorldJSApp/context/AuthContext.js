@@ -57,7 +57,9 @@ export const AuthProvider = ({children}) => {
     const reg = async (email, password, username) => {
       const { token: serverToken, user: userData}  = await register(email,password,username);
       if (userData) {
-        setUser(userData.user)
+        setUser(userData)
+        console.log("token : ",token)
+        console.log("server token : ",serverToken)
         await AsyncStorage.setItem('token',serverToken);
         setToken(serverToken)
       }

@@ -23,7 +23,6 @@ export async function login(email, password) {
 }
 
 export async function register(email, password, display_name) {
-  //  TOUT cassé ?????? 
     console.log("auth.js : await of register in auth.js")
     const res = await fetch(`${API_BASE}/api/register`, {
       method: 'POST',
@@ -160,7 +159,6 @@ export async function markBoulderAsCompleted(boulderId, token) {
     });
     console.log("sortie fecth")
     const json = await res.json();
-    console.log("fetching")
     if (!res.ok) {
       console.log('Server error', json);
       return { error: json };

@@ -79,11 +79,11 @@ const upload = multer({ storage });
           const role = 'user';
           const userId = result.lastID;
           const token = jwt.sign({ userId, email, display_name, role }, JWT_SECRET, { expiresIn: '7d' });
-          console.log("serv.js : end")
+          console.log("serv.js : end", token)
           res.json({ token, user: { id: userId, email, display_name, role } });
 
         } catch (err) {
-          console.log("error during try")
+          console.error("error during try")
           res.status(400).json({ error: 'User exists' });
         }
       });
@@ -94,15 +94,12 @@ const upload = multer({ storage });
         if (!email || !password) {
           return res.status(400).json({ error: `You must specify email and password : ${email} - ${password}` });
         }
-        console.log("server.js : selecting in db ")
         const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
-        console.log("server.js : finish selecting in db ")
         if (!user) return res.status(401).json({ error: 'Invalid email' });
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
         const role = user.role || 'user';
         const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role}, JWT_SECRET, { expiresIn: '7d' });
-        console.log("token : ",token)
         res.json({ token, user: { id: user.id, email, display_name: user.display_name, role } });
         console.log("server.js : end login ")
     });
@@ -143,7 +140,6 @@ const upload = multer({ storage });
           try { fs.unlinkSync(file.path); } catch (e) { console.warn('unable to delete', e); }
           return res.status(400).json({ error: 'Missing zoneId, grade or color' });
         }
-        console.log("zone : {zone_id}", zoneId, "grade : ", grade, "color:", color)
 
         const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
     
@@ -235,20 +231,16 @@ const upload = multer({ storage });
 
     app.post('/api/boulders/toggle-validation', auth, async (req, res) => {
       console.log("POST /api/boulders/toggle-validation");
-    
       try {
         const userId = req.user.userId;
         const boulderId = req.body.boulder;
-
         if (!boulderId) {
           return res.status(400).json({ error: "Missing boulder id" });
         }
-
         const exists = await db.get(`
           SELECT 1 FROM boulder_validations
           WHERE user_id = ? AND boulder_id = ?
         `, [userId, boulderId]);
-    
         if (exists) {
           await db.run(`
             DELETE FROM boulder_validations
@@ -257,7 +249,6 @@ const upload = multer({ storage });
     
           return res.json({ validated: false });
         }
-    
         await db.run(`
           INSERT INTO boulder_validations (user_id, boulder_id)
           VALUES (?, ?)
@@ -273,13 +264,10 @@ const upload = multer({ storage });
 
     app.get('/api/comment/:boulderId', auth, async (req,res) => {
       try {
-        console.log("serv 1")
         const boulderId = req.params.boulderId;
-        console.log("serv 2")
         if (!boulderId) return res.status(400).json({ error: 'Missing boulderId' });
 
         const comments = await db.all('SELECT * from comments WHERE boulder_id = ? ', [boulderId]);
-        console.log("serv 3")
 
         res.json({comments})
 
@@ -295,7 +283,6 @@ const upload = multer({ storage });
         const userName = req.user.display_name
         const boulderId = req.params.boulderId;
         const content = (req.body.comment ?? '').trim();
-        console.log("post comment 1")
         console.log("POST /api/comment", { userId, userName, boulderId, content });
         if (!boulderId) {
           return res.status(400).json({ error: 'Missing boulder id' });
@@ -311,16 +298,13 @@ const upload = multer({ storage });
           `INSERT INTO comments (user_id, user_name, boulder_id, content) VALUES (?, ?, ?, ?)`,
           [userId, userName, boulderId, content]
         );
-        console.log("post comment 2")
 
         const insertedId = result?.lastID;
         let insertedRow = null;
         if (insertedId) {
-          console.log("post comment 3")
 
           insertedRow = await db.get(`SELECT id, user_id, boulder_id AS boulder, content, created_at FROM comments WHERE id = ?`, [insertedId]);
         } else {
-          console.log("post comment 4")
 
           // fallback : récupérer le dernier commentaire de cet utilisateur sur ce bloc (moins fiable en cas de concurrence)
           insertedRow = await db.get(
@@ -343,9 +327,7 @@ const upload = multer({ storage });
     app.delete('/api/comment/:commentId', auth, async (req, res) => {
       try {
         console.log("serv: DELETE /api/comment/:commentId hit");
-        console.log("req.user:", req.user); 
         const commentId = parseInt(req.params.commentId, 10);
-        console.log("commentID : ",commentId)
         if (!commentId) {
           return res.status(400).json({ error: 'Invalid comment id' });
         }
