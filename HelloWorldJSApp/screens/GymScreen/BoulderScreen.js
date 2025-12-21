@@ -67,6 +67,7 @@ export default function BoulderScreen() {
     addNewComment,
     removeComment,
     getCommentCount,
+    initCommentCounts,
   } = useComment(token);
 
   async function loadBoulders() {
@@ -91,13 +92,15 @@ export default function BoulderScreen() {
   useEffect(() => {
     (async () => {
       await loadBoulders();
-      if (boulders.length > 0) {
-        initCommentCounts(boulders);
-      }
-      console.log("fin load")
       setLoading(false);
     })();
   }, []);
+
+  useEffect(() => {
+    if (boulders.length > 0) {
+      initCommentCounts(boulders);
+    }
+  }, [boulders]);
 
 
   const grades = [
@@ -224,7 +227,7 @@ return (
                   >
                   <Text style={localStyles.commentBubble}>💬</Text>
                   <View style={localStyles.commentCountBox}>
-                    <Text style={localStyles.commentCountText}>{commentCount}</Text>
+                    <Text style={localStyles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity

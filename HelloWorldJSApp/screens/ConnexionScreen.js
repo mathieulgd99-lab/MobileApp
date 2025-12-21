@@ -44,7 +44,6 @@ export default function ConnexionScreen() {
 
   return (
     <View style={styles.form}>
-      <Text> Not connected</Text>
       <TextInput style={styles.inputText} value={email} placeholder='Email' onChangeText={setEmail}/>
       {newUser && <TextInput style={styles.inputText} value={username} placeholder='Username' onChangeText={setUsername}/>}
       <TextInput style={styles.inputText}  value={password} placeholder='********' onChangeText={setPassword}/>

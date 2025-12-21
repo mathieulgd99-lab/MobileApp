@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { getValidatedBoulders } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
-const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = "http://192.168.0.12:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 
 export default function HistoryScreen() {
