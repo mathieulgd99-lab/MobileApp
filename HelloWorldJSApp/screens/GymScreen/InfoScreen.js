@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { 
   ScrollView, 
   Text, 
@@ -8,6 +8,10 @@ import {
   Linking 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
+import React from "react";
+import styles from "../styles";
+
+
 
 export default function InfosScreen() {
 
@@ -123,8 +127,7 @@ export default function InfosScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
+/*const styles = StyleSheet.create({
   divider: {
   height: 1,
   backgroundColor: '#2A2A2A',
@@ -211,3 +214,4 @@ addressRow: {
 
 
 });
+*/
