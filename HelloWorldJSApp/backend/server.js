@@ -219,36 +219,125 @@ const upload = multer({ storage });
 
     app.post('/api/boulders/toggle-validation', auth, async (req, res) => {
       console.log("POST /api/boulders/toggle-validation");
-      try {
-        const userId = req.user.userId;
-        const boulderId = req.body.boulder;
-        if (!boulderId) {
-          return res.status(400).json({ error: "Missing boulder id" });
-        }
-        const exists = await db.get(`
-          SELECT 1 FROM boulder_validations
-          WHERE user_id = ? AND boulder_id = ?
-        `, [userId, boulderId]);
-        if (exists) {
-          await db.run(`
-            DELETE FROM boulder_validations
-            WHERE user_id = ? AND boulder_id = ?
-          `, [userId, boulderId]);
     
+      const userId = req.user.userId;
+      const boulderId = req.body.boulder;
+    
+      if (!boulderId) {
+        return res.status(400).json({ error: "Missing boulder id" });
+      }
+    
+      try {
+        await db.exec('BEGIN TRANSACTION;');
+    
+        const existing = await db.get(
+          `SELECT 1 FROM boulder_validations WHERE user_id = ? AND boulder_id = ?`,
+          [userId, boulderId]
+        );
+    
+        const boulder = await db.get(
+          `SELECT validations_count FROM boulder WHERE id = ?`,
+          [boulderId]
+        );
+    
+        if (!boulder) {
+          await db.exec('ROLLBACK;');
+          return res.status(404).json({ error: "Boulder not found" });
+        }
+    
+        const oldCount = boulder.validations_count;
+        const oldPoint = oldCount > 0 ? 1000 / oldCount : 0;
+    
+        // 
+        // Enlever une validation
+        //
+        if (existing) {
+          const newCount = oldCount - 1;
+          const newPoint = newCount > 0 ? 1000 / newCount : 0;
+          const delta = newPoint - oldPoint;
+    
+          await db.run(
+            `DELETE FROM boulder_validations WHERE user_id = ? AND boulder_id = ?`,
+            [userId, boulderId]
+          );
+
+          await db.run(
+            `UPDATE boulder
+             SET validations_count = ?, current_point = ?
+             WHERE id = ?`,
+            [newCount, newPoint, boulderId]
+          );
+    
+          // utilisateurs restants gagnent des points
+          if (newCount > 0) {
+            await db.run(
+              `UPDATE users
+               SET total_points = total_points + ?
+               WHERE id IN (
+                 SELECT user_id FROM boulder_validations WHERE boulder_id = ?
+               )`,
+              [delta, boulderId]
+            );
+          }
+    
+          // retirer les points de l'utilisateur
+          await db.run(
+            `UPDATE users SET total_points = total_points - ? WHERE id = ?`,
+            [oldPoint, userId]
+          );
+    
+          await db.exec('COMMIT;');
           return res.json({ validated: false });
         }
-        await db.run(`
-          INSERT INTO boulder_validations (user_id, boulder_id)
-          VALUES (?, ?)
-        `, [userId, boulderId]);
     
+        // 
+        // AJOUTER UNE VALIDATION
+        // 
+        const newCount = oldCount + 1;
+        const newPoint = 1000 / newCount;
+        const delta = newPoint - oldPoint;
+        await db.run(
+          `INSERT INTO boulder_validations (user_id, boulder_id)
+           VALUES (?, ?)`,
+          [userId, boulderId]
+        );
+    
+        await db.run(
+          `UPDATE boulder
+           SET validations_count = ?, current_point = ?
+           WHERE id = ?`,
+          [newCount, newPoint, boulderId]
+        );
+    
+        // anciens validateurs perdent des points
+        if (oldCount > 0) {
+          await db.run(
+            `UPDATE users
+             SET total_points = total_points + ?
+             WHERE id IN (
+               SELECT user_id FROM boulder_validations
+               WHERE boulder_id = ? AND user_id != ?
+             )`,
+            [delta, boulderId, userId]
+          );
+        }
+    
+        // nouvel utilisateur gagne ses points
+        await db.run(
+          `UPDATE users SET total_points = total_points + ? WHERE id = ?`,
+          [newPoint, userId]
+        );
+    
+        await db.exec('COMMIT;');
         res.json({ validated: true });
     
       } catch (err) {
+        await db.exec('ROLLBACK;');
         console.error("Error toggling validation:", err);
         res.status(500).json({ error: "Internal server error" });
       }
     });
+    
 
     app.get('/api/comment/:boulderId', auth, async (req,res) => {
       try {
@@ -394,6 +483,47 @@ const upload = multer({ storage });
       }
     });
     
+    app.get('/api/points/:userId', auth, async (req, res) => {
+      try {
+        const userId = Number(req.params.userId);
+        if (!userId) {
+          return res.status(400).json({ error: "Missing or invalid user id" });
+        }
+    
+        const row = await db.get(
+          `SELECT total_points FROM users WHERE id = ?`,
+          [userId]
+        );
+    
+        if (!row) {
+          return res.status(404).json({ error: "User not found" });
+        }
+    
+        res.json({
+          total_points: row.total_points
+        });
+    
+      } catch (err) {
+        console.error("Error get total points:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
+
+    app.get('/api/leaderboard', auth, async (req, res) => {
+      try {
+        const users = await db.all(
+          `SELECT id, display_name, total_points
+           FROM users
+           ORDER BY total_points DESC`
+        );
+    
+        res.json(users);
+    
+      } catch (err) {
+        console.error("Error get leaderboard:", err);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
 
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     

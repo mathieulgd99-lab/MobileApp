@@ -287,6 +287,52 @@ export async function archiveBoulders(token, boulderId) {
   }
 }
 
+export async function getUserPoints(token,userId){
+  console.log("entrée get User Points")
+  try {
+    const url = `${API_BASE}/api/points/${encodeURIComponent(userId)}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        },
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("res UserPoints : ",json)
+    return json;
+  } catch (err) {
+    console.error('ArchivedBoulder error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function getLeaderboard(token) {
+  console.log("entrée get LeaderBoard")
+  try {
+    const res = await fetch(`${API_BASE}/api/leaderboard`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        },
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("res leaderboard : ",json)
+    return json;
+  } catch (err) {
+    console.error('ArchivedBoulder error', err);
+    return { error: err.message || err };
+  }
+}
+
+
 export async function updatePassword(newPassword) {
 
 }
