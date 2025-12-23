@@ -105,7 +105,7 @@ export function useBoulders(token) {
         const res = await archiveBoulders(token, boulder.id);
         if (!res.error){
           await refresh();
-          return true
+          return res
         }
         return false
       } catch (err) {
@@ -128,19 +128,37 @@ export function useBoulders(token) {
   const countGrade = (difficulty) =>
     boulders.filter(b => b.grade === difficulty).length;
 
+  const grades = [
+    { id:'1', difficulty: 1},
+    { id:'2', difficulty: 2},
+    { id:'3', difficulty: 3},
+    { id:'4', difficulty: 4},
+    { id:'5', difficulty: 5},
+    { id:'6', difficulty: 6},
+    { id:'7', difficulty: 7},
+    { id:'8', difficulty: 8},
+    { id:'9', difficulty: 9},
+    { id:'10', difficulty: 10},
+    { id:'11', difficulty: 11},
+    { id:'12', difficulty: 12},
+    { id:'13', difficulty: 13},
+    { id:'14', difficulty: 14},
+  ]
+
   return {
     boulders,
     validatedBoulders,
     loading,
     refreshing,
     error,
+    grades,
     refresh,
     toggleValidation,
     isValidated,
     getFiltered,
     countGrade,
     archiveBoulder,
-    deleteBoulder
+    deleteBoulder,
   };
 }
 

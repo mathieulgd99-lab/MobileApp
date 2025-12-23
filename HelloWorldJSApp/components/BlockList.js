@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import { FlatList, View, TouchableOpacity, Image, StyleSheet, Text, Alert } from 'react-native';
 import styles from '../screens/styles';
 import { Ionicons } from '@expo/vector-icons';
+import { Snackbar } from 'react-native-paper';
+
 
 
 export default function BlocksList({
@@ -16,9 +18,12 @@ export default function BlocksList({
     columnWrapperStyle,
     onDeleteBoulder,
     onArchiveBoulder,
+    userRole,
   }) {
   
   const [menuOpenForId, setMenuOpenForId] = useState(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarText, setSnackbarText] = useState('');
 
   const isValidated = (id) =>
     validatedBoulders.some((b) => b.id === id);
@@ -36,7 +41,7 @@ export default function BlocksList({
 
 
   const confirmAction = (type, item) => {
-    const actionText = type === 'delete' ? 'delete' : 'archive';
+    const actionText = type === 'delete' ? 'delete' : 'archive/unarchive';
   
     Alert.alert(
       'Confirm action',
@@ -46,12 +51,21 @@ export default function BlocksList({
         {
           text: actionText.toUpperCase(),
           style: type === 'delete' ? 'destructive' : 'default',
-          onPress: () => {
+          onPress: async () => {
             closeMenu();
             if (type === 'delete') {
               onDeleteBoulder(item);
             } else {
-              onArchiveBoulder(item);
+              res = await onArchiveBoulder(item);
+              if (res?.archived) {
+                setSnackbarText('🟢 Boulder archived successfully');
+              } else if (res.archived === false) {
+                setSnackbarText('🔵 Boulder unarchived successfully');
+              } else {
+                setSnackbarText('ERROR ARCHIVED')
+              }
+
+              setSnackbarVisible(true);
             }
           },
         },
@@ -72,14 +86,16 @@ export default function BlocksList({
                 />
             </TouchableOpacity>
             {/* Bouton en haut a droite pour delete / archive un bloc */}
-            <TouchableOpacity
+            {userRole === 'admin' && (
+              <TouchableOpacity
               onPress={() => openMenu(item)}
               style={localStyles.menuButton}
               activeOpacity={0.7}
             >
               <Ionicons name="ellipsis-vertical-outline" size={20} color="#fff" />
             </TouchableOpacity>
-            {menuOpenForId === item.id && (
+            )}
+            {userRole === 'admin' && menuOpenForId === item.id && (
               <View style={localStyles.menu}>
                 <TouchableOpacity
                   style={localStyles.menuItem}
@@ -118,6 +134,14 @@ export default function BlocksList({
                 >
                 <Text style={styles.validationIcon}>✓</Text>
                 </TouchableOpacity>
+                <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={3000}
+                style={{ backgroundColor: '#4CAF50' }}
+                >
+                {snackbarText}
+                </Snackbar>
         </View>
     </View>
   );

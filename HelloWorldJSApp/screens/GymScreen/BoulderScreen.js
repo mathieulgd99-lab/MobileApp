@@ -16,7 +16,7 @@ import { ScrollView,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders, markBoulderAsCompleted, getValidatedBoulders, getComment, deleteComment, addComment } from '../../api/auth';
+import { getBoulders, getValidatedBoulders } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 
 import useBoulders from '../Hooks/useBoulder';
@@ -54,6 +54,7 @@ export default function BoulderScreen() {
     error,
     validatedBoulders,
     boulders,
+    grades,
     toggleValidation,
     getFiltered,
     deleteBoulder,
@@ -104,23 +105,6 @@ export default function BoulderScreen() {
     }
   }, [boulders]);
 
-
-  const grades = [
-    { id:'1', difficulty: 1},
-    { id:'2', difficulty: 2},
-    { id:'3', difficulty: 3},
-    { id:'4', difficulty: 4},
-    { id:'5', difficulty: 5},
-    { id:'6', difficulty: 6},
-    { id:'7', difficulty: 7},
-    { id:'8', difficulty: 8},
-    { id:'9', difficulty: 9},
-    { id:'10', difficulty: 10},
-    { id:'11', difficulty: 11},
-    { id:'12', difficulty: 12},
-    { id:'13', difficulty: 13},
-    { id:'14', difficulty: 14},
-  ]
 
   const filteredBoulders = getFiltered({
     zone: selectedZone,
@@ -213,6 +197,7 @@ return (
           imageBase={API_BASE}
           onDeleteBoulder={deleteBoulder}
           onArchiveBoulder={archiveBoulder}
+          userRole={user.role}
         />
         {/* Image full-screen modal */}
         {showImage && selectedImage && (

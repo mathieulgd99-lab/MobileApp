@@ -5,14 +5,10 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
   Modal,
   SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-
+  ScrollView
 } from 'react-native';
 import styles from '../styles';
 import { getValidatedBoulders } from '../../api/auth';
@@ -27,29 +23,27 @@ export default function HistoryScreen() {
   const {user, token} = useContext(AuthContext);
 
   const [showAll, setShowAll] = useState(false);
-  const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showImage, setShowImage] = useState(false)
-  const [newComment, setNewComment] = useState('');
 
   const {
     loading,
     error,
     boulders,
     validatedBoulders,
+    grades,
     deleteBoulder,
     archiveBoulder,
-    getFiltered
+    getFiltered,
+    countGrade
   } = useBoulders(token);
 
   const {
     comments,
     commentsModal,
-    postingComment,
     openComments,
     closeComments,
-    addNewComment,
     removeComment,
     getCommentCount,
     initCommentCounts,
@@ -65,24 +59,6 @@ export default function HistoryScreen() {
       console.log("Erreur getValidatedBoulders :", validated.error);
     }
   }
-
-
-  const grades = [
-    { id:'1', difficulty: 1},
-    { id:'2', difficulty: 2},
-    { id:'3', difficulty: 3},
-    { id:'4', difficulty: 4},
-    { id:'5', difficulty: 5},
-    { id:'6', difficulty: 6},
-    { id:'7', difficulty: 7},
-    { id:'8', difficulty: 8},
-    { id:'9', difficulty: 9},
-    { id:'10', difficulty: 10},
-    { id:'11', difficulty: 11},
-    { id:'12', difficulty: 12},
-    { id:'13', difficulty: 13},
-    { id:'14', difficulty: 14},
-  ]
 
   const filteredBoulders = getFiltered({
     archived: !showAll,
@@ -114,6 +90,24 @@ export default function HistoryScreen() {
     setShowImage(false);
     setSelectedImage(null);
   }
+
+  const handleClickGrade = (gradeDifficulty) => {
+    setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
+  }
+
+  const renderGrade =  ({item}) => {
+    const isSelected = selectedGrade === item.difficulty;
+    const backColor = isSelected ? '#8bc34a' : '#808080'
+    const count = countGrade(item.difficulty)
+    return (
+      <TouchableOpacity
+      onPress={() => handleClickGrade(item.difficulty)}
+      >
+        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  {count}/{count}</Text>
+      </TouchableOpacity>
+    )
+  }
+
   return (
     <View style={localStyles.container}>
       <Text style={localStyles.header}>Validated boulders</Text>
@@ -127,8 +121,17 @@ export default function HistoryScreen() {
             {showAll ? 'Show : Everything' : 'Show : Current only'}
           </Text>
         </TouchableOpacity>
-    </View>
-
+      </View>
+    
+    <FlatList
+        data={grades}
+        horizontal
+        keyExtractor={(grade) => grade.id}
+        renderItem={renderGrade}
+        scrollEnabled={true}
+        extraData={selectedGrade}
+    />
+    <ScrollView>
     <BlocksList
           boulders={filteredBoulders}
           validatedBoulders={validatedBoulders}
@@ -139,6 +142,7 @@ export default function HistoryScreen() {
           imageBase={API_BASE}
           onDeleteBoulder={deleteBoulder}
           onArchiveBoulder={archiveBoulder}
+          userRole={user.role}
         />
     {/* Image full-screen modal */}
     {showImage && selectedImage && (
@@ -161,7 +165,7 @@ export default function HistoryScreen() {
                 <Text style={localStyles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
               </View>
             </TouchableOpacity>
-            <View            style={[
+            <View style={[
               localStyles.validationButton,
             ]}>
             <Text style={localStyles.validationIcon}>✓</Text>
@@ -215,6 +219,7 @@ export default function HistoryScreen() {
             </View>
           </SafeAreaView>
         </Modal>
+      </ScrollView>
     </View>
   )
 }

@@ -351,9 +351,7 @@ const upload = multer({ storage });
           return res.status(400).json({ error: 'Invalid boulder id' });
         }
     
-        const requesterId = req.user.userId;
-
-        const isAdmin = requesterRole === 'admin';
+        const isAdmin = req.user.role === 'admin';
     
         if (!isAdmin) {
           return res.status(403).json({ error: 'Forbidden: not allowed to delete this boulder' });
