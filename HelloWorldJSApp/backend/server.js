@@ -42,7 +42,9 @@ function auth(req, res, next) {
 
 
 function requireAdmin(req, res, next) {
-  if (req.user?.role === 'admin') return next();
+  if (req.user?.role === 'admin') {
+    return next();
+  }
   return res.status(403).send('Forbidden');
 }
 
@@ -179,21 +181,7 @@ const upload = multer({ storage });
       console.log("GET /api/boulders (public + optional user)");
     
       try {
-        // let userId = null;
-    
-        // // Vérifier si un token existe dans les headers (sans obliger)
-        // const authHeader = req.headers.authorization;
-        // if (authHeader && authHeader.startsWith("Bearer ")) {
-        //   const token = authHeader.split(" ")[1];
-        //   try {
-        //     const decoded = jwt.verify(token, JWT_SECRET);
-        //     userId = decoded.userId;
-        //   } catch (err) {
-        //     // Token invalide → ignore, accès public
-        //     console.log("Invalid token, continuing as guest");
-        //   }
-        // }
-    
+
         const boulders = await db.all(`
           SELECT *
           FROM boulder`);
@@ -332,7 +320,6 @@ const upload = multer({ storage });
           return res.status(400).json({ error: 'Invalid comment id' });
         }
     
-        // Récupère le commentaire
         const comment = await db.get(`SELECT id, user_id, boulder_id, content, created_at FROM comments WHERE id = ?`, [commentId]);
         if (!comment) {
           return res.status(404).json({ error: 'Comment not found' });
@@ -353,6 +340,59 @@ const upload = multer({ storage });
       } catch (err) {
         console.error('Error deleting comment:', err);
         return res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.delete('/api/boulders/:boulderId', auth, requireAdmin, async (req,res) => {
+      try {
+        console.log("serv: DELETE /api/boulders/:boulderId hit");
+        const boulderId = parseInt(req.params.boulderId, 10);
+        if (!boulderId) {
+          return res.status(400).json({ error: 'Invalid boulder id' });
+        }
+    
+        const requesterId = req.user.userId;
+
+        const isAdmin = requesterRole === 'admin';
+    
+        if (!isAdmin) {
+          return res.status(403).json({ error: 'Forbidden: not allowed to delete this boulder' });
+        }
+    
+        await db.run(`DELETE FROM boulder WHERE id = ?`, [boulderId]);
+    
+        return res.json({ success: true, deletedId: boulderId });
+      } catch (err) {
+        console.error('Error deleting boulder:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.post('/api/boulders/archived/:boulderId', auth, requireAdmin, async (req, res) => {
+      try {
+        const boulderId = req.params.boulderId;
+        if (!boulderId) return res.status(400).json({ error: "Missing boulder id" });
+    
+        const result = await db.run(
+          `UPDATE boulder
+           SET archived_at = CASE WHEN archived_at IS NULL THEN datetime('now') ELSE NULL END
+           WHERE id = ?`,
+          [boulderId]
+        );
+
+        const updated = await db.get(
+          `SELECT archived_at FROM boulder WHERE id = ?`,
+          [boulderId]
+        );
+    
+        res.json({
+          archived: updated.archived_at !== null,
+          archived_at: updated.archived_at
+        });
+    
+      } catch (err) {
+        console.error("Error toggling archived:", err);
+        res.status(500).json({ error: "Internal server error" });
       }
     });
     

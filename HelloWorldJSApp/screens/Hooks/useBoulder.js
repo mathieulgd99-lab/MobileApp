@@ -3,6 +3,8 @@ import {
   getBoulders,
   markBoulderAsCompleted,
   getValidatedBoulders,
+  archiveBoulders,
+  deleteBoulders,
 } from '../../api/auth';
 
 
@@ -70,40 +72,61 @@ export function useBoulders(token) {
           return { ok: false, error: res.error };
         }
       } catch (err) {
-        return { ok: false, error: err.message || 'Erreur réseau' };
+        return { ok: false, error: err.message || 'Error validation' };
       }
     },
     [token]
   );
 
-  const isValidated = useCallback(
-    (id) => {
-      return validatedBoulders.some((b) => b.id === id);
-    },
-    [validatedBoulders]
-  );
-
-  const getFiltered = useCallback(
-    ({ zone = null, grade = null } = {}) => {
-      let res = boulders;
-      if (zone && grade) {
-        res = boulders.filter((b) => b.zoneId === zone && b.grade === grade);
-      } else if (zone) {
-        res = boulders.filter((b) => b.zoneId === zone);
-      } else if (grade) {
-        res = boulders.filter((b) => b.grade === grade);
+  const deleteBoulder = useCallback(
+    async (boulder) => {
+      if (!token){
+        throw new Error('Admin token required to delete a boulder')
       }
-      return res;
+      try {
+        const res = await deleteBoulders(token,boulder.id);
+        if (!res.error){
+          await refresh();
+          return true
+        }
+      } catch (err) {
+        return 'Error delete';
+      }
     },
-    [boulders]
-  );
+    [token]
+  )
 
-  const countGrade = useCallback(
-    (difficulty) => {
-      return boulders.reduce((acc, b) => (b.grade === difficulty ? acc + 1 : acc), 0);
+  const archiveBoulder = useCallback(
+    async (boulder) => { 
+      if (!token){
+        throw new Error('Admin token required to archive a boulder')
+      }
+      try {
+        const res = await archiveBoulders(token, boulder.id);
+        if (!res.error){
+          await refresh();
+          return true
+        }
+        return false
+      } catch (err) {
+        return 'Error archived'
+      }
     },
-    [boulders]
-  );
+    [token]
+  )
+  const isValidated = (id) =>
+    validatedBoulders.some((b) => b.id === id);
+  
+  const getFiltered = ({ zone = null, grade = null, archived = null } = {}) => {
+    let res = boulders;
+    if (archived) res = res.filter(b => !b.archived_at)
+    if (zone) res = res.filter(b => b.zoneId === zone);
+    if (grade) res = res.filter(b => b.grade === grade);
+    return res;
+  };
+  
+  const countGrade = (difficulty) =>
+    boulders.filter(b => b.grade === difficulty).length;
 
   return {
     boulders,
@@ -116,6 +139,8 @@ export function useBoulders(token) {
     isValidated,
     getFiltered,
     countGrade,
+    archiveBoulder,
+    deleteBoulder
   };
 }
 

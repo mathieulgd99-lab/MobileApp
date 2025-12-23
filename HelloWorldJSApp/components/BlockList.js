@@ -1,6 +1,8 @@
-import React from 'react';
-import { FlatList, View, TouchableOpacity, Image, StyleSheet, Text } from 'react-native';
+import React, {useState} from 'react';
+import { FlatList, View, TouchableOpacity, Image, StyleSheet, Text, Alert } from 'react-native';
 import styles from '../screens/styles';
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function BlocksList({
     boulders,
@@ -12,12 +14,51 @@ export default function BlocksList({
     imageBase,
     numColumns = 2,
     columnWrapperStyle,
+    onDeleteBoulder,
+    onArchiveBoulder,
   }) {
+  
+  const [menuOpenForId, setMenuOpenForId] = useState(null);
+
   const isValidated = (id) =>
     validatedBoulders.some((b) => b.id === id);
 
   const renderBoulder = ({ item }) => {
     const commentCount = getCommentCount ? getCommentCount(item.id) : 0;
+  
+    const openMenu = (item) => {
+      setMenuOpenForId((prev) => (prev === item.id ? null : item.id));
+    };
+    
+    const closeMenu = () => {
+      setMenuOpenForId(null);
+    };
+
+
+  const confirmAction = (type, item) => {
+    const actionText = type === 'delete' ? 'delete' : 'archive';
+  
+    Alert.alert(
+      'Confirm action',
+      `Are you sure you want to ${actionText} this boulder?`,
+      [
+        { text: 'Cancel', style: 'cancel', onPress: closeMenu },
+        {
+          text: actionText.toUpperCase(),
+          style: type === 'delete' ? 'destructive' : 'default',
+          onPress: () => {
+            closeMenu();
+            if (type === 'delete') {
+              onDeleteBoulder(item);
+            } else {
+              onArchiveBoulder(item);
+            }
+          },
+        },
+      ]
+    );
+    };    
+  
   
     return (
     <View style={styles.item}>
@@ -30,6 +71,34 @@ export default function BlocksList({
                     {borderColor: item.color}]}
                 />
             </TouchableOpacity>
+            {/* Bouton en haut a droite pour delete / archive un bloc */}
+            <TouchableOpacity
+              onPress={() => openMenu(item)}
+              style={localStyles.menuButton}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="ellipsis-vertical-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+            {menuOpenForId === item.id && (
+              <View style={localStyles.menu}>
+                <TouchableOpacity
+                  style={localStyles.menuItem}
+                  onPress={() => confirmAction('archive', item)}
+                >
+                  <Text style={localStyles.menuText}>Archive</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={localStyles.menuItem}
+                  onPress={() => confirmAction('delete', item)}
+                >
+                  <Text style={[localStyles.menuText, { color: 'red' }]}>
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => onOpenComments(item.id)}
@@ -135,6 +204,35 @@ const localStyles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative',
-    }
+    },
+    menuButton: {
+      position: 'absolute',
+      top: 6,
+      right: 6,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      borderRadius: 16,
+      padding: 6,
+      zIndex: 10,
+    },
+    menu: {
+      position: 'absolute',
+      top: 32,
+      right: 6,
+      backgroundColor: '#222',
+      borderRadius: 6,
+      paddingVertical: 4,
+      zIndex: 30,
+      elevation: 5,
+    },
+  
+    menuItem: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+    },
+  
+    menuText: {
+      color: '#fff',
+      fontSize: 14,
+    },
   });
   

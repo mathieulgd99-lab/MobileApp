@@ -43,7 +43,6 @@ export default function BoulderScreen() {
 
   const {user, token} = useContext(AuthContext);
 
-  const [boulders, setBoulders] = useState([]);
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -54,8 +53,11 @@ export default function BoulderScreen() {
     loading,
     error,
     validatedBoulders,
+    boulders,
     toggleValidation,
     getFiltered,
+    deleteBoulder,
+    archiveBoulder
   } = useBoulders(token);
 
   const {
@@ -123,6 +125,7 @@ export default function BoulderScreen() {
   const filteredBoulders = getFiltered({
     zone: selectedZone,
     grade: selectedGrade,
+    archived: true,
   });
 
   function countGrade(difficulty) {
@@ -208,6 +211,8 @@ return (
           onToggleValidation={toggleValidation}
           getCommentCount={getCommentCount}
           imageBase={API_BASE}
+          onDeleteBoulder={deleteBoulder}
+          onArchiveBoulder={archiveBoulder}
         />
         {/* Image full-screen modal */}
         {showImage && selectedImage && (
@@ -380,5 +385,9 @@ const localStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
+  },
+  image_zoomed: {
+    width: "100%",
+    height: "85%",
   },
 });

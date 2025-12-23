@@ -220,7 +220,6 @@ export async function deleteComment(token, commentId) {
 
 export async function getComment(token, boulderId) {
   try {
-    console.log("load comment 3", boulderId)
     const url = `${API_BASE}/api/comment/${encodeURIComponent(boulderId)}`;
     const res = await fetch(url, {
       method: 'GET',
@@ -233,10 +232,57 @@ export async function getComment(token, boulderId) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("All comments :", json)
+    console.log("boulder : ",boulderId, " Comments : ", json)
     return json;
   } catch (err) {
     console.error('Get comment error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function deleteBoulders(token, boulderId) {
+  try {
+    const url = `${API_BASE}/api/boulders/${encodeURIComponent(boulderId)}`;
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization' : `Bearer ${token}`,
+      }
+    })
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("boulder : ",boulderId, " delete error : ", json)
+    return json;
+  } catch (err) {
+    console.error('Delete boulder error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function archiveBoulders(token, boulderId) {
+  try {
+    console.log("entrée archivedBoulder boulderId: ",boulderId, "token : ",token)
+    const url = `${API_BASE}/api/boulders/archived/${encodeURIComponent(boulderId)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+        },
+      body: JSON.stringify({ boulder: boulderId })
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    console.log("res archiveBoulders : ",json)
+    return json;
+  } catch (err) {
+    console.error('ArchivedBoulder error', err);
     return { error: err.message || err };
   }
 }
@@ -249,11 +295,5 @@ export async function updateDisplayName(newName) {
 
 }
 
-// Soit faire un if already completed dans le backend et utiliser cette fonction pour cliquer/decliquer OU en faire une autre 
-
-
-export async function deleteBoulder() {
-
-}
 
 
