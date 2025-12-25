@@ -1,116 +1,92 @@
-import { StyleSheet } from 'react-native';
+// styles.js
+import { StyleSheet } from "react-native";
 
+const styles = StyleSheet.create({
+  divider: {
+  height: 1,
+  backgroundColor: '#2A2A2A',
+  marginVertical: 24,
+  },
+  sectionHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 12,
+},
 
-// React icons 
-////////////////////////////////////////////////////
-//////////// https://ionic.io/ionicons /////////////
-/////////////////////////////////////////////////////
+sectionTitle: {
+  color: '#aaa',
+  fontSize: 13,
+  marginLeft: 6,
+  letterSpacing: 0.5,
+},
+descriptionContainer: {
+  paddingHorizontal: 12, // 👈 plus étroit que le reste de l’écran
+},
 
-
-export default StyleSheet.create({
   container: {
-    paddingTop: 24,
-    alignItems: 'center',
+    flex: 1,
     backgroundColor: '#121212',
-    paddingVertical: 20,
-    paddingBottom: 60,
-  },
-  map: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: 10,
-    marginBottom: 16,
-  },
-  image: {
-    width: 170,
-    height: 250,
-    borderRadius: 5,
-    borderColor: '#808080',
-    borderWidth: 5,
-    marginHorizontal: 8,
-    marginBottom: 10,
-    marginTop: 20,
+    padding: 16,
   },
   text: {
-    color: 'white',
-    fontSize: 18,
-  },
-  grade: {
-    color: 'white',
-    fontSize: 13,
-    textAlign: 'center',
-    width: 55,
-    height: 30,
-    borderRadius:6,
-    marginHorizontal: 8,
-  },
-  image_zoomed: {
-    width: "100%",
-    height: "85%",
-  },
-
-  footer: {
-    height: "10%",
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  footerText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-  },
-  footerButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: 6,
-    borderColor: "white",
-    backgroundColor: 'transparent',
-    color: "white",
-  },
-  footerButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color : "white",
-  },
-
-  header : {
-    backgroundColor : 'white',
-    height: "5%",
-    alignItems: "center",
-
-  },
-
-  header_grade : {
-    backgroundColor : 'grey',
-    color : 'white',
-    width : "5%",
-    textAlign: 'center',
-    borderRadius: 5,
-    fontSize: 18,
-  },
-
-  validationButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 2,
-  },
-  
-  validationIcon: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 14,
+    lineHeight: 24,
   },
+  title: {
+    color: '#fff',
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  titleContainer: {
+    marginLeft: -8, 
+    marginBottom: 8,
+    },
+  infoBlock: {
+    marginBottom: 20, 
+    },
+
+  iconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  iconButton: {
+    marginHorizontal: 15,
+  },
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start', 
+    marginBottom: 15,
+    },
+  linkText: {
+  color: '#4EA8FF', // couleur lien
+},
+
+infoRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 10,
+  paddingVertical: 6, // zone cliquable plus large
+},
+
+addressRow: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  paddingVertical: 6,
+},
+
+
+  addressText: {
+    color: '#fff',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 22,
+  },
+
+
 });
-    
+
+export default styles;
