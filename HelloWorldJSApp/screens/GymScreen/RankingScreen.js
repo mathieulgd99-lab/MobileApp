@@ -1,18 +1,7 @@
-
-////
-// 
-// 
-// 
-//     PULL APRES COMMIT AVANT DE PUSH
-// 
-// 
-// 
-// 
 import React, { useState, useCallback, useContext } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Dimensions,
@@ -21,9 +10,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import useBoulders from '../Hooks/useBoulder';
 import { AuthContext } from '../../context/AuthContext';
-
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import styles from '../styles';
 
 function formatPoints(p) {
   if (p == null) return '0';
@@ -56,16 +43,16 @@ function PodiumItem({ position, user, onPress }) {
     <View style={styles.podiumCol}>
       {/* Carte utilisateur */}
       <TouchableOpacity
-        style={styles.userCard}
+        style={styles.ranking_userCard}
         onPress={() => onPress(user)}
         activeOpacity={0.8}
       >
-        <Text style={styles.userName}>{user.display_name}</Text>
-        <Text style={styles.userPoints}>{user.total_points} pts</Text>
+        <Text style={styles.ranking_userName}>{user.display_name}</Text>
+        <Text style={styles.ranking_userPoints}>{user.total_points} pts</Text>
       </TouchableOpacity>
 
       {/* Marche du podium */}
-      <View style={[styles.podiumStep, blockStyle, { height }]} />
+      <View style={[styles.ranking_podiumStep, blockStyle, { height }]} />
     </View>
   );
 }
@@ -73,12 +60,12 @@ function PodiumItem({ position, user, onPress }) {
 
 function LeaderRow({ index, item, onPress }) {
   return (
-    <TouchableOpacity style={styles.row} onPress={() => onPress(item)} activeOpacity={0.7}>
-      <Text style={styles.rowRank}>{index + 4}</Text>
-      <View style={styles.rowInfo}>
-        <Text style={styles.rowName}>{item.display_name}</Text>
+    <TouchableOpacity style={styles.ranking_row} onPress={() => onPress(item)} activeOpacity={0.7}>
+      <Text style={styles.ranking_rowRank}>{index + 4}</Text>
+      <View style={styles.ranking_rowInfo}>
+        <Text style={styles.ranking_rowName}>{item.display_name}</Text>
       </View>
-      <Text style={styles.rowPoints}>{formatPoints(item.total_points)} pts</Text>
+      <Text style={styles.ranking_rowPoints}>{formatPoints(item.total_points)} pts</Text>
     </TouchableOpacity>
   );
 }
@@ -131,16 +118,16 @@ export default function RankingScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.ranking_container}>
         <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Chargement du classement …</Text>
+        <Text style={styles.ranking_loadingText}>Chargement du classement …</Text>
       </View>
     );
   }
 
   return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Classement</Text>
+      <View style={styles.ranking_container}>
+        <Text style={styles.ranking_title}>Classement</Text>
 
         <FlatList
           data={rest}
@@ -186,165 +173,10 @@ export default function RankingScreen() {
               </View>
             </>
           )}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={styles.ranking_list}
           showsVerticalScrollIndicator={false}
         />
       </View>
 
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#121212',
-    paddingHorizontal: 12,
-    paddingTop: 12,
-  },
-  title: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: '700',
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-
-  // PODIUM
-  podium: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 8,
-    marginBottom: 12,
-  },
-  podiumLeft: { flex: 1, alignItems: 'center' },
-  podiumCenter: { flex: 1.2, alignItems: 'center' },
-  podiumRight: { flex: 1, alignItems: 'center' },
-
-  podiumCol: {
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  podiumBlock: {
-    width: SCREEN_WIDTH * 0.28,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  first: {
-    backgroundColor: '#ffd700', // gold
-  },
-  second: {
-    backgroundColor: '#c0c0c0', // silver
-  },
-  third: {
-    backgroundColor: '#cd7f32', // bronze
-  },
-  podiumName: {
-    color: '#000',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  podiumPoints: {
-    color: '#000',
-    fontSize: 12,
-    marginTop: 6,
-  },
-  podiumPos: {
-    marginTop: 6,
-    color: 'white',
-    fontSize: 18,
-  },
-  emptyPodium: {
-    height: 80,
-  },
-
-  // LIST
-  listHeader: {
-    paddingVertical: 6,
-    borderBottomColor: '#222',
-    borderBottomWidth: 1,
-    marginBottom: 6,
-  },
-  listHeaderText: {
-    color: '#aaa',
-    fontSize: 13,
-  },
-  list: {
-    paddingBottom: 40,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderBottomColor: '#202020',
-    borderBottomWidth: 1,
-  },
-  rowRank: {
-    color: '#fff',
-    width: 36,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-  rowInfo: {
-    flex: 1,
-    paddingLeft: 8,
-  },
-  rowName: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  rowPoints: {
-    color: '#ccc',
-    fontSize: 14,
-    width: 80,
-    textAlign: 'right',
-  },
-  loadingText: {
-    color: '#fff',
-    marginTop: 12,
-  },
-  podiumStep: {
-    width: SCREEN_WIDTH * 0.28,
-    borderRadius: 8,
-    marginTop: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  userCard: {
-    backgroundColor: '#1e1e1e',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 6,
-    minWidth: SCREEN_WIDTH * 0.28,
-    borderWidth: 1,
-    borderColor: '#2a2a2a',
-  },
-  
-  userName: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  
-  userPoints: {
-    color: '#aaa',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  
-});

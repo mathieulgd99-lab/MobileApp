@@ -1,5 +1,8 @@
 // styles.js
 import { StyleSheet } from "react-native";
+import {Dimensions,} from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   divider: {
@@ -86,7 +89,119 @@ addressRow: {
     lineHeight: 22,
   },
 
+  ///////////////////////////////////////////
+  ///////////// RANKING SCREEN /////////////
+  ///////////////////////////////////////////
+  ranking_container: {
+    flex: 1,
+    backgroundColor: '#121212',
+    paddingHorizontal: 12,
+    paddingTop: 12,
+  },
+  ranking_title: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: '700',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
 
+  // PODIUM
+  podium: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  podiumLeft: { flex: 1, alignItems: 'center' },
+  podiumCenter: { flex: 1.2, alignItems: 'center' },
+  podiumRight: { flex: 1, alignItems: 'center' },
+
+  podiumCol: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  first: {
+    backgroundColor: '#ffd700', // gold
+  },
+  second: {
+    backgroundColor: '#c0c0c0', // silver
+  },
+  third: {
+    backgroundColor: '#cd7f32', // bronze
+  },
+  // LIST
+
+  ranking_list: {
+    paddingBottom: 40,
+  },
+  ranking_row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomColor: '#202020',
+    borderBottomWidth: 1,
+  },
+  ranking_rowRank: {
+    color: '#fff',
+    width: 36,
+    textAlign: 'center',
+    fontWeight: '700',
+  },
+  ranking_rowInfo: {
+    flex: 1,
+    paddingLeft: 8,
+  },
+  ranking_rowName: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  ranking_rowPoints: {
+    color: '#ccc',
+    fontSize: 14,
+    width: 80,
+    textAlign: 'right',
+  },
+  ranking_loadingText: {
+    color: '#fff',
+    marginTop: 12,
+  },
+  ranking_podiumStep: {
+    width: SCREEN_WIDTH * 0.28,
+    borderRadius: 8,
+    marginTop: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  ranking_userCard: {
+    backgroundColor: '#1e1e1e',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 6,
+    minWidth: SCREEN_WIDTH * 0.28,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
+  },
+  
+  ranking_userName: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  
+  ranking_userPoints: {
+    color: '#aaa',
+    fontSize: 12,
+    marginTop: 4,
+  },
 });
 
 export default styles;
