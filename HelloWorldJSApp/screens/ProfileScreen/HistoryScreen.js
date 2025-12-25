@@ -50,9 +50,7 @@ export default function HistoryScreen() {
   } = useComment(token);
 
   async function loadBoulders() {
-    console.log("Boulder.js : fetching boulders...");
     const validated = await getValidatedBoulders(token);
-    console.log("validated boulders",validated)
     if (!validated.error) {
       setValidatedBoulders(validated.boulders);
     } else {

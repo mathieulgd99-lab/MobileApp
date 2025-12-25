@@ -15,9 +15,7 @@ export async function login(email, password) {
                 "password" : password
         })
     });
-    console.log("auth.js : response status", res.status, res.statusText);
     const result = await res.json();
-    console.log("auth.js : raw response text:", result);
     console.log("auth.js : end of login in server.js")
     return result
 }
@@ -61,9 +59,6 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         const filename = pickedAsset.fileName || uri.split('/').pop();
         const mimeType = guessMimeType(filename);
         const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
-        console.log("fileUri :",fileUri)
-        console.log("fileName :",filename)
-        console.log("mimeType :",mimeType)
 
         formData.append('boulder', {
         uri: fileUri,
@@ -76,12 +71,8 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         formData.append('color', color);
 
         if (formData._parts) {
-          console.log('FormData parts:');
           formData._parts.forEach(p => console.log(p[0], p[1]));
         }
-
-        console.log("lance le fetch dans addBoulder auth.js")
-        console.log("Formdata : ",formData)
 
         const res = await fetch(`${API_BASE}/api/boulders`, {
           method: 'POST',
@@ -109,13 +100,12 @@ export async function getBoulders() {
       const res = await fetch(`${API_BASE}/api/boulders`, {
         method: 'GET',
       });
-      console.log("sortie fetch")
+      console.log("getBoulders")
       const json = await res.json();
       if (!res.ok) {
         console.log('Server error', json);
         return { error: json };
       }
-      console.log("boulders : ",json)
       return json;
     } catch (err) {
       console.error('getBoulders error', err);
@@ -137,7 +127,7 @@ export async function getValidatedBoulders(token) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("validated boulders :",json)
+    console.log("end get validatedboulders :")
     return json;
   } catch (err) {
     console.error('getValidatedBoulders error', err);
@@ -147,8 +137,7 @@ export async function getValidatedBoulders(token) {
 
 export async function markBoulderAsCompleted(boulderId, token) {
   try {
-    console.log("entrée markboulder")
-    console.log("appel fecth", token)
+    console.log("entrée markboulderasCOmpleted")
     const res = await fetch(`${API_BASE}/api/boulders/toggle-validation`, {
       method: 'POST',
       headers: {
@@ -157,13 +146,12 @@ export async function markBoulderAsCompleted(boulderId, token) {
         },
       body: JSON.stringify({ boulder: boulderId })
     });
-    console.log("sortie fecth")
     const json = await res.json();
     if (!res.ok) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("res markboulderascompleted : ",json)
+    console.log("sortie markboulderascompleted : ")
     return json;
   } catch (err) {
     console.error('markBoulderAsCompleted error', err);
@@ -187,7 +175,7 @@ export async function addComment(token, commentary, boulder_id) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("res comment : ",json)
+    console.log("sortie add comment : ")
     return json;
   } catch (err) {
     console.error('Comment error', err);
@@ -197,7 +185,7 @@ export async function addComment(token, commentary, boulder_id) {
 
 export async function deleteComment(token, commentId) {
   try {
-    console.log("Delete comment", commentId);
+    console.log("Delete comment");
     const res = await fetch(`${API_BASE}/api/comment/${encodeURIComponent(commentId)}`, {
       method: 'DELETE',
       headers: {
@@ -205,11 +193,11 @@ export async function deleteComment(token, commentId) {
       },
     });
     const json = await res.json();
-    console.log("sortie fetch delete json: ", json)
     if (!res.ok) {
       console.log('Server error', json);
       return { error: json };
     }
+    console.log("sortie delete comment")
     return json;
   } catch (err) {
     console.error('Delete comment error', err);
@@ -232,7 +220,7 @@ export async function getComment(token, boulderId) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("boulder : ",boulderId, " Comments : ", json)
+    console.log("sortie getCOmment")
     return json;
   } catch (err) {
     console.error('Get comment error', err);
@@ -254,7 +242,7 @@ export async function deleteBoulders(token, boulderId) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("boulder : ",boulderId, " delete error : ", json)
+    console.log("sortie deleteBoulder")
     return json;
   } catch (err) {
     console.error('Delete boulder error', err);
@@ -279,7 +267,7 @@ export async function archiveBoulders(token, boulderId) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("res archiveBoulders : ",json)
+    console.log("sortie archiveBoulders")
     return json;
   } catch (err) {
     console.error('ArchivedBoulder error', err);

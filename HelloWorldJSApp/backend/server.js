@@ -246,14 +246,14 @@ const upload = multer({ storage });
         }
     
         const oldCount = boulder.validations_count;
-        const oldPoint = oldCount > 0 ? 1000 / oldCount : 0;
+        const oldPoint = oldCount > 0 ? Math.floor(1000 / oldCount) : 0;
     
         // 
         // Enlever une validation
         //
         if (existing) {
           const newCount = oldCount - 1;
-          const newPoint = newCount > 0 ? 1000 / newCount : 0;
+          const newPoint = newCount > 0 ? Math.floor(1000 / newCount) : 0;
           const delta = newPoint - oldPoint;
     
           await db.run(
@@ -294,7 +294,7 @@ const upload = multer({ storage });
         // AJOUTER UNE VALIDATION
         // 
         const newCount = oldCount + 1;
-        const newPoint = 1000 / newCount;
+        const newPoint = Math.floor(1000 / newCount);
         const delta = newPoint - oldPoint;
         await db.run(
           `INSERT INTO boulder_validations (user_id, boulder_id)

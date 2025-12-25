@@ -5,11 +5,6 @@ const { open } = require('sqlite');
 const bcrypt = require('bcryptjs');
 const readline = require('readline');
 
-// Script to add administrator into the database, run on your terminal:
-// node create_admin.js --email Admin --create-if-missing --password "A" --display-name "Admin"
-
-
-
 function parseArgs() {
   const args = process.argv.slice(2);
   const out = {};
@@ -42,58 +37,47 @@ async function promptHidden(question) {
 (async () => {
   try {
     const argv = parseArgs();
+
     const email = argv.email;
-    const createIfMissing = argv['create'] || argv.create || false;
+    const displayName = argv['display-name'] || argv.display_name;
+    const role = argv.role === 'admin' ? 'admin' : 'user';
     let password = argv.pw || null;
-    const displayName = argv['display-name'] || argv.display_name || null;
     const dbPath = argv.db || process.env.DB_PATH || './data.db';
 
-    if (!email) {
-      console.error('Usage: node promote_admin.js --email user@example.com [--create] [--pw SECRET] [--display-name "Name"] [--db ./data.db]');
+    if (!email || !displayName) {
+      console.error(
+        'Usage: node create_user.js --email user@example.com --display-name "Name" [--pw SECRET] [--role admin|user] [--db ./data.db]'
+      );
       process.exit(1);
+    }
+
+    if (!password) {
+      password = await promptHidden('Password (visible while typing): ');
+      if (!password) {
+        console.error('Mot de passe vide, abort.');
+        process.exit(2);
+      }
     }
 
     const db = await open({ filename: dbPath, driver: sqlite3.Database });
 
-    // Look for user
-    const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
-
-    if (user) {
-      if (user.role === 'admin') {
-        console.log(`L'utilisateur ${email} est déjà admin (id=${user.id}).`);
-      } else {
-        await db.run('UPDATE users SET role = ? WHERE id = ?', ['admin', user.id]);
-        console.log(`Promu en admin : ${email} (id=${user.id}).`);
-      }
+    const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+    if (existing) {
+      console.error(`Utilisateur déjà existant : ${email}`);
       await db.close();
-      process.exit(0);
-    }
-
-    // User not found
-    if (!createIfMissing) {
-      console.error(`Utilisateur introuvable : ${email}. Utilise --create-if-missing pour le créer et le promouvoir.`);
-      await db.close();
-      process.exit(2);
-    }
-
-    // Create user flow
-    if (!password) {
-      // Ask interactively
-      console.log('Création d\'un nouvel utilisateur — veuillez saisir un mot de passe sécurisé.');
-      password = await promptHidden('Password (visible while typing): ');
-      if (!password) {
-        console.error('Mot de passe vide, abort.');
-        await db.close();
-        process.exit(3);
-      }
+      process.exit(3);
     }
 
     const hash = await bcrypt.hash(password, 10);
+
     const result = await db.run(
       'INSERT INTO users (email, password_hash, display_name, role) VALUES (?, ?, ?, ?)',
-      [email, hash, displayName || null, 'admin']
+      [email, hash, displayName, role]
     );
-    console.log(`Utilisateur créé et promu en admin : ${email} (id=${result.lastID}).`);
+
+    console.log(`Utilisateur créé : ${email}`);
+    console.log(`→ id=${result.lastID}, role=${role}`);
+
     await db.close();
     process.exit(0);
 

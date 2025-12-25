@@ -74,7 +74,6 @@ export default function BoulderScreen() {
   } = useComment(token);
 
   async function loadBoulders() {
-    console.log("Boulder.js : fetching boulders...");
     const result = await getBoulders();
     if (!result.error) {
       setBoulders(result.boulders);
@@ -82,8 +81,6 @@ export default function BoulderScreen() {
       console.log("Erreur getBoulders :", result.error);
     }
     const validated = await getValidatedBoulders(token);
-    console.log("boulders", boulders)
-    console.log("validated boulders",validated)
     if (!validated.error) {
       setValidatedBoulders(validated.boulders);
     } else {

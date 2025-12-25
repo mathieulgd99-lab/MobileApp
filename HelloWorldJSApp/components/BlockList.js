@@ -25,9 +25,6 @@ export default function BlocksList({
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarText, setSnackbarText] = useState('');
 
-  const isValidated = (id) =>
-    validatedBoulders.some((b) => b.id === id);
-
   const renderBoulder = ({ item }) => {
     const commentCount = getCommentCount ? getCommentCount(item.id) : 0;
   

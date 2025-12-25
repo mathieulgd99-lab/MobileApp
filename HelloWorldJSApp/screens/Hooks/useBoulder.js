@@ -5,6 +5,7 @@ import {
   getValidatedBoulders,
   archiveBoulders,
   deleteBoulders,
+  getLeaderboard,
 } from '../../api/auth';
 
 
@@ -145,6 +146,37 @@ export function useBoulders(token) {
     { id:'14', difficulty: 14},
   ]
 
+  const getTotalPoint = useCallback(
+    async (token) => { 
+      if (!token){
+        throw new Error('Token required to see the leaderboard')
+      }
+      try {
+        const res = await getLeaderboard(token);
+        console.log("res leaderboard : ",res)
+        return res
+      } catch (err) {
+        return 'Error archived'
+      }
+    },
+    [token]
+  )
+
+  const getEachUserPoint = useCallback(
+    async (user) => { 
+      if (!token){
+        throw new Error('Token required to see the leaderboard')
+      }
+      try {
+        const res = await getUserPoints(token,user.id);
+        console.log("res point for user : ",user.display_name, "points : ",res)
+        return true
+      } catch (err) {
+        return 'Error archived'
+      }
+    },
+    [token]
+  )
   return {
     boulders,
     validatedBoulders,
@@ -159,6 +191,9 @@ export function useBoulders(token) {
     countGrade,
     archiveBoulder,
     deleteBoulder,
+    getTotalPoint,
+    getEachUserPoint,
+
   };
 }
 
