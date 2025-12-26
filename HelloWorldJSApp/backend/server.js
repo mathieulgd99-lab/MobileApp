@@ -101,8 +101,8 @@ const upload = multer({ storage });
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
         const role = user.role || 'user';
-        const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role}, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: user.id, email, display_name: user.display_name, role } });
+        const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role, created_at: user.created_at}, JWT_SECRET, { expiresIn: '7d' });
+        res.json({ token, user: { id: user.id, email, display_name: user.display_name, role, created_at: user.created_at } });
         console.log("server.js : end login ")
     });
 

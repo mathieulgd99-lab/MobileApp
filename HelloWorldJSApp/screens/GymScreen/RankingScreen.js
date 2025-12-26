@@ -106,7 +106,6 @@ export default function RankingScreen() {
 
   const onPressUser = (user) => {
     if (!user) return;
-    // adapte le nom 'Profile' si ton route est différente
     navigation.navigate('Profile', { userId: user.id });
   };
 

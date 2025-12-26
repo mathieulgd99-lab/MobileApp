@@ -113,16 +113,6 @@ export default function BoulderScreen() {
     archived: false,
   });
 
-  // function countGrade(difficulty) {
-  //   let res = 0;
-  //   boulders.forEach((image) => {
-  //     if (image.grade === difficulty) {
-  //       res++
-  //     }
-  //   })
-  //   return res
-  // }
-
   function handleCloseModal() {
     setShowImage(false);
     setSelectedImage(null);

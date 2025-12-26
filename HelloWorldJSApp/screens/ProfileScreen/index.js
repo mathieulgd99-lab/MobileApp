@@ -1,22 +1,37 @@
-import * as React from 'react';
-import { ScrollView,View, Image, StyleSheet, Text } from 'react-native';
+import React, {useContext} from 'react';
+import { ScrollView,View, Image, StyleSheet, Text,TouchableOpacity } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { Ionicons } from '@expo/vector-icons';
 
 // import des sous-pages
 import HistoryScreen from './HistoryScreen';
 import StatisticScreen from './StatisticScreen';
+import { AuthContext } from '../../context/AuthContext';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function ProfileScreen() {
+  const {user, token} = useContext(AuthContext);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-    {/* Image ou bannière au-dessus */}
-      <Image
-        source={require('../../assets/photo.avif')}
-        style={styles.banner}
-        resizeMode="cover"
-      />
+      {/* Bande supérieure */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.username}>{user.display_name}</Text>
+          <Text style={styles.subtitle}>
+            Climber since {new Date(user.created_at).toLocaleDateString()}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings')}
+        >
+          <Ionicons name="settings-outline" size={26} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Tabs */}
       <View style={styles.tabsContainer}>
         <Tab.Navigator
           screenOptions={{
@@ -35,18 +50,34 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
-  banner: {
-    width: '100%',
-    height: 150,
+  container: {
+    flex: 1,
+    backgroundColor: '#121212',
   },
-  title: {
+
+  header: {
+    height: 130,
+    backgroundColor: '#ff7a00',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  username: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 10,
   },
+
+  subtitle: {
+    color: '#fff',
+    fontSize: 13,
+    opacity: 0.8,
+    marginTop: 2,
+  },
+
   tabsContainer: {
     flex: 1,
   },
