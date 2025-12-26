@@ -16,7 +16,7 @@ import { AuthContext } from '../../context/AuthContext';
 import useBoulders from '../Hooks/useBoulder';
 import BlocksList from '../../components/BlockList';
 import useComment from '../Hooks/useComment';
-const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = "http://192.168.1.69:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 
 export default function HistoryScreen() {

@@ -1,7 +1,9 @@
-import React, { useContext }from 'react';
-import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-import { useState } from 'react'
+import styles from './styles';
+
+
 
 export default function ConnexionScreen() {
   const [email, setEmail] = useState('');
@@ -9,86 +11,116 @@ export default function ConnexionScreen() {
   const [password, setPassword] = useState('');
   const [newUser, setNewUser] = useState(false);
 
-  const {user, log_in, reg, log_out} = useContext(AuthContext);
-  // const conditionRemplie = () => {
-  //   if (newUser) {
-  //     return password.length > 0 && email.length > 0 && username.length > 0}
-  //   else {
-  //     return password.length > 0 && email.length > 0
-  //   }
-  // }
+  const { user, log_in, reg, log_out } = useContext(AuthContext);
 
+  // --------------------------
+  //    SI L’UTILISATEUR EST CONNECTÉ
+  // --------------------------
   if (user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>
-        🏠 Welcome {user.display_name} your email is {user.email}!
+      <View style={styles.connexion_container}>
+        <Text style={styles.connexion_text}>
+          🏠 Welcome {user.display_name}, your email is {user.email}!
         </Text>
-        <Button title="Disconnect" onPress={() => {log_out()}}></Button>
+
+        <TouchableOpacity
+          style={styles.connexion_logoutButton}
+          onPress={log_out}
+        >
+          <Text style={styles.connexion_logoutText}>Disconnect</Text>
+        </TouchableOpacity>
       </View>
-    )
+    );
   }
 
+  // --------------------------
+  //    SUBMIT
+  // --------------------------
   const handleSubmit = async () => {
-    console.log("Submited")
     if (newUser) {
-      console.log("start Registering")
-      await reg(email,password, username)
-      console.log(`End of submit`)
+      await reg(email, password, username);
     } else {
-      console.log("start login")
-      await log_in(email,password)
-      console.log(`End of submit`)
+      await log_in(email, password);
     }
-  }
+  };
 
+  // --------------------------
+  //    FORMULAIRE
+  // --------------------------
   return (
-    <View style={styles.form}>
-      <TextInput style={styles.inputText} value={email} placeholder='Email' onChangeText={setEmail}/>
-      {newUser && <TextInput style={styles.inputText} value={username} placeholder='Username' onChangeText={setUsername}/>}
-      <TextInput style={styles.inputText}  value={password} placeholder='********' onChangeText={setPassword}/>
-      {/* disabled={!conditionRemplie()} */}
-      <Button title="OK"  onPress={handleSubmit}/>
+    <View style={styles.connexion_container}>
 
-      {!newUser &&
-      <View>
-        <Text> No account ?</Text>
-        <Button title="Create a new profile" onPress={() => {setNewUser(true)}}/>
+      <Image source={require("../wall_images/vietclimb_logo.png")} style={styles.logo} />
+      
+      <Text style={styles.connexion_welcome}>
+        Chào mừng đến với ĐáBloc !
+      </Text>
+
+      <Text style={styles.connexion_welcomeSub}>
+        Welcome on ĐáBloc 🇻🇳
+      </Text>
+
+
+
+      <View style={styles.connexion_form}>
+
+        <Text style={styles.connexion_title}>
+          {newUser ? "Create Account" : "Login"}
+        </Text>
+
+        <TextInput
+          style={styles.connexion_inputText}
+          value={email}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          onChangeText={setEmail}
+        />
+
+        {newUser && (
+          <TextInput
+            style={styles.connexion_inputText}
+            value={username}
+            placeholder="Username"
+            placeholderTextColor="#888"
+            onChangeText={setUsername}
+          />
+        )}
+
+        <TextInput
+          style={styles.connexion_inputText}
+          value={password}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          secureTextEntry
+          onChangeText={setPassword}
+        />
+
+        <TouchableOpacity
+          style={styles.connexion_button}
+          onPress={handleSubmit}
+        >
+          <Text style={styles.connexion_buttonText}>OK</Text>
+        </TouchableOpacity>
+
+        <View style={styles.connexion_switchContainer}>
+          {!newUser ? (
+            <>
+              <Text style={styles.connexion_switchText}>No account?</Text>
+              <TouchableOpacity onPress={() => setNewUser(true)}>
+                <Text style={styles.connexion_switchButton}>Create a new profile</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.connexion_switchText}>Already registered?</Text>
+              <TouchableOpacity onPress={() => setNewUser(false)}>
+                <Text style={styles.connexion_switchButton}>Back to login</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
       </View>
-      }
-      {newUser &&
-      <View>
-        <Text>Log in ?</Text>
-        <Button title="Ecran connexion" onPress={() => {setNewUser(false)}}/>
-      </View>
-      }
     </View>
-    )
-
+  );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1e1e1e',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  form: {
-    flex: 1,
-    backgroundColor: '#white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: '#61dafb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 20,
-  },
-  inputText: {
-    borderColor: 'black',
-    borderWidth: 2,
-  }
-});

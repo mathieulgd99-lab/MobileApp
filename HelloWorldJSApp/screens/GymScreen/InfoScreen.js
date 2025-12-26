@@ -76,7 +76,7 @@ export default function InfosScreen() {
 
       {/* Bloc texte */}
       <View style={styles.descriptionContainer}>
-        <Text style={styles.text}>
+        <Text style={styles.descriptionText}>
         You asked for it, so here it is — Vietclimb Hanoi has opened its doors and is ready to welcome climbers from across the city and beyond. Our brand-new bouldering gym brings the best of urban climbing to the heart of Hanoi for everyone who wants to climb, train, and hang out.
 
         {"\n\n"}

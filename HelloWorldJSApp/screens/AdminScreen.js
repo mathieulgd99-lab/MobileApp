@@ -2,21 +2,20 @@ import React, { useContext }from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Button,
   Image,
-  Alert
- } from 'react-native';
+  Alert,
+  ScrollView
+} from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { addBoulder } from '../api/auth';
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import useBoulders from './Hooks/useBoulder';
+import styles from './styles';
 
-// import styles from './styles';
-
-const API_BASE = "http://192.168.190.72:3000";
+const API_BASE = "http://192.168.1.69:3000";
 
 export default function AdminScreen() {
 
@@ -84,22 +83,22 @@ export default function AdminScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>
+    <ScrollView style={styles.admin_container}>
+      <Text style={styles.admin_title}>
       🏠 Welcome on admin page ! 
       </Text>
-      <View style={styles.form}>
+      <View style={styles.admin_form}>
 
 
       <Button title="Add a wall" onPress={pickImage} />
 
       {pickedImage && (
-        <Image source={{ uri: pickedImage.uri }} style={styles.preview} />
+        <Image source={{ uri: pickedImage.uri }} style={styles.admin_preview} />
       )}
       <Picker
         selectedValue={grade}
         onValueChange={(itemValue) => setGrade(itemValue)}
-        style={styles.picker}
+        style={styles.admin_picker}
       >
         <Picker.Item label="1" value="1" />
         <Picker.Item label="2" value="2" />
@@ -116,7 +115,7 @@ export default function AdminScreen() {
         <Picker.Item label="13" value="13" />
         <Picker.Item label="14" value="14" />
       </Picker>
-      <Text style={styles.smallText}>
+      <Text style={styles.admin_smallText}>
         Actual selection : {grade || "No grade"}
       </Text>
 
@@ -124,7 +123,7 @@ export default function AdminScreen() {
       <Picker
         selectedValue={color}
         onValueChange={(itemValue) => setColor(itemValue)}
-        style={styles.picker}
+        style={styles.admin_picker}
       >
         <Picker.Item label="black" value="black" />
         <Picker.Item label="blue" value="blue" />
@@ -136,14 +135,14 @@ export default function AdminScreen() {
         <Picker.Item label="white" value="white" />
         <Picker.Item label="yellow" value="gold" />
       </Picker>
-      <Text style={styles.smallText}>
-      Actual selection : {color || "No color"}
-      </Text>
+  <Text style={styles.admin_smallText}>
+  Actual selection : {color || "No color"}
+  </Text>
 
       <Picker
         selectedValue={zoneId}
         onValueChange={(itemValue) => setZoneId(itemValue)}
-        style={styles.picker}
+        style={styles.admin_picker}
       >
         <Picker.Item label="murDalle" value="murDalle" />
         <Picker.Item label="murTension" value="murTension" />
@@ -157,72 +156,12 @@ export default function AdminScreen() {
         <Picker.Item label="murDiedre" value="murDiedre" />
         <Picker.Item label="murEasy" value="murEasy" />
       </Picker>
-      <Text style={styles.smallText}>
+      <Text style={styles.admin_smallText}>
       Actual selection : {zoneId || "No wall"}
       </Text>
       <Button title="Send" onPress={uploadImage} />
       </View>
-    </View>
+    </ScrollView>
     
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-    padding: 20,
-  },
-
-  text: {
-    color: "#61dafb",
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
-  smallText: {
-    color: "#61dafb",
-    fontSize: 14,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  form: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: 15,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-
-  picker: {
-    backgroundColor: "#2a2a2a",
-    borderRadius: 10,
-    marginTop: 15,
-    color: "white",
-  },
-
-  preview: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    marginTop: 15,
-  },
-
-  label: {
-    color: "#ccc",
-    marginTop: 15,
-    marginBottom: 5,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-
-  buttonContainer: {
-    marginTop: 20,
-    borderRadius: 10,
-  },
-});

@@ -1,6 +1,7 @@
 // styles.js
 import { StyleSheet } from "react-native";
 import {Dimensions,} from 'react-native';
+import { COLORS } from './colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -17,7 +18,7 @@ const styles = StyleSheet.create({
 },
 
 sectionTitle: {
-  color: '#aaa',
+  color: COLORS.grey,
   fontSize: 13,
   marginLeft: 6,
   letterSpacing: 0.5,
@@ -25,19 +26,25 @@ sectionTitle: {
 descriptionContainer: {
   paddingHorizontal: 12, // 👈 plus étroit que le reste de l’écran
 },
-
-  container: {
-    flex: 1,
-    backgroundColor: '#121212',
-    padding: 16,
-  },
-  text: {
-    color: '#fff',
+descriptionText: {
+  color: COLORS.white,
     fontSize: 14,
     lineHeight: 24,
   },
+
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    padding: 16,
+  },
+  text: {
+    color: COLORS.white,
+    fontSize: 14,
+    lineHeight: 24,
+  },
+  
   title: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 16,
     lineHeight: 24,
     fontWeight: 'bold',
@@ -65,7 +72,7 @@ descriptionContainer: {
     marginBottom: 15,
     },
   linkText: {
-  color: '#4EA8FF', // couleur lien
+  color: "#4EA8FF", // couleur lien
 },
 
 infoRow: {
@@ -83,23 +90,152 @@ addressRow: {
 
 
   addressText: {
-    color: '#fff',
+    color: COLORS.white,
     marginLeft: 8,
     flex: 1,
     lineHeight: 22,
   },
+
+ ///////////////////////////////////////////
+///////////// CONNEXION SCREEN /////////////
+///////////////////////////////////////////
+
+connexion_container: {
+  flex: 1,
+  backgroundColor: COLORS.primaryLight,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 24,
+},
+
+// formulaire au milieu de l’écran
+connexion_form: {
+  width: '90%',
+  backgroundColor: COLORS.background,
+  borderRadius: 16,
+  paddingVertical: 30,
+  paddingHorizontal: 20,
+  alignItems: 'center',
+  shadowColor: '#000',
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
+  elevation: 6,
+},
+
+connexion_title: {
+  fontSize: 26,
+  color: '#fff',
+  fontWeight: '700',
+  marginBottom: 20,
+  textAlign: 'center',
+},
+
+// input moderne
+connexion_inputText: {
+  width: '100%',
+  backgroundColor: '#2a2a2a',
+  color: '#fff',
+  paddingVertical: 12,
+  paddingHorizontal: 14,
+  borderRadius: 10,
+  marginVertical: 8,
+  borderWidth: 1,
+  borderColor: '#3a3a3a',
+  fontSize: 16,
+},
+
+// bouton principal
+connexion_button: {
+  backgroundColor: COLORS.primary,
+  width: '100%',
+  paddingVertical: 14,
+  borderRadius: 10,
+  marginTop: 16,
+  alignItems: 'center',
+},
+
+connexion_buttonText: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: '600',
+},
+
+// questions en bas du formulaire
+connexion_switchContainer: {
+  marginTop: 18,
+  alignItems: 'center',
+},
+
+connexion_switchText: {
+  color: COLORS.grey,
+  fontSize: 14,
+},
+
+connexion_switchButton: {
+  color: COLORS.primary,
+  fontSize: 16,
+  marginTop: 6,
+  fontWeight: '600',
+},
+
+// écran connecté
+connexion_text: {
+  color: COLORS.primary,
+  fontSize: 20,
+  fontWeight: '600',
+  textAlign: 'center',
+  marginBottom: 20,
+},
+
+connexion_logoutButton: {
+  backgroundColor: '#e74c3c',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+},
+connexion_logoutText: {
+  color: COLORS.white,
+  fontSize: 16,
+  fontWeight: '700',
+},
+connexion_welcome: {
+  fontSize: 28,
+  color: COLORS.primary,
+  fontWeight: '800',
+  marginBottom: 4,
+  textAlign: 'center',
+  letterSpacing: 0.5,
+},
+
+connexion_welcomeSub: {
+  fontSize: 18,
+  color: COLORS.grey,
+  marginBottom: 20,
+  textAlign: 'center',
+  fontStyle: 'italic',
+},
+logo: {
+  width: 140,
+  height: 140,
+  resizeMode: "contain",
+  alignSelf: "center",
+  marginBottom: 20,
+},
+
+
+
 
   ///////////////////////////////////////////
   ///////////// RANKING SCREEN /////////////
   ///////////////////////////////////////////
   ranking_container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: COLORS.background,
     paddingHorizontal: 12,
     paddingTop: 12,
   },
   ranking_title: {
-    color: 'white',
+    color: COLORS.white,
     fontSize: 24,
     fontWeight: '700',
     alignSelf: 'center',
@@ -180,7 +316,7 @@ addressRow: {
     elevation: 6,
   },
   ranking_userCard: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: COLORS.background,
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 10,
@@ -228,7 +364,7 @@ addressRow: {
     fontSize: 18,
   },
   grade: {
-    color: 'white',
+    color: COLORS.white,
     fontSize: 13,
     textAlign: 'center',
     width: 55,
@@ -270,7 +406,7 @@ addressRow: {
   },
   
   validationIcon: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -284,21 +420,21 @@ addressRow: {
   footerText: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'white',
+    color: COLORS.white,
   },
   footerButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
     borderRadius: 6,
-    borderColor: "white",
+    borderColor: COLORS.white,
     backgroundColor: 'transparent',
-    color: "white",
+    color: COLORS.white,
   },
   footerButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color : "white",
+    color : COLORS.white,
   },
 
   ///////////////////////////////////////////
@@ -324,7 +460,7 @@ addressRow: {
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
@@ -332,7 +468,7 @@ addressRow: {
   commentCountText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#000',
+    color: COLORS.black,
   },
   commentRow: {
     flexDirection: 'row',
@@ -340,6 +476,43 @@ addressRow: {
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
     alignItems: 'center',
+  },
+
+  ///////////////////////////////////////////
+  ///////////// ADMIN SCREEN /////////////
+  ///////////////////////////////////////////
+  admin_container: {
+    flex: 1,
+    backgroundColor: '#121212',
+    padding: 16,
+  },
+  admin_title: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+    marginVertical: 12,
+    textAlign: 'center',
+  },
+  admin_form: {
+    backgroundColor: '#1e1e1e',
+    borderRadius: 12,
+    padding: 12,
+  },
+  admin_preview: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+    borderRadius: 8,
+    marginVertical: 10,
+  },
+  admin_picker: {
+    color: '#fff',
+    backgroundColor: '#2a2a2a',
+    marginVertical: 8,
+  },
+  admin_smallText: {
+    color: '#aaa',
+    marginBottom: 8,
   },
 });
 

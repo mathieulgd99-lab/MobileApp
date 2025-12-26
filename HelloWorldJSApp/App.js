@@ -11,6 +11,8 @@ import GymScreen from './screens/GymScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import AdminScreen from './screens/AdminScreen';
 import ConnexionScreen from './screens/ConnexionScreen';
+import { COLORS } from './screens/colors';
+
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createStackNavigator();
@@ -33,9 +35,9 @@ function AppTabs() {
           else if (route.name === 'Admin') iconName = focused ? 'settings' : 'settings-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#61dafb',
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: { backgroundColor: '#1e1e1e' },
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.tabInactive,
+        tabBarStyle: { backgroundColor: COLORS.background},
       })}
     >
       <Tab.Screen name="Gym" component={GymScreen} />

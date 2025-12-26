@@ -7,6 +7,8 @@ import RankingScreen from './RankingScreen';
 import InfoScreen from './InfoScreen';
 import EventScreen from './EventScreen';
 import BoulderScreen from './BoulderScreen';
+import { COLORS } from '../colors';
+
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -22,9 +24,9 @@ export default function GymScreen() {
       <View style={styles.tabsContainer}>
         <Tab.Navigator
           screenOptions={{
-            tabBarActiveTintColor: '#61dafb',
-            tabBarIndicatorStyle: { backgroundColor: '#61dafb' },
-            tabBarStyle: { backgroundColor: '#1e1e1e' },
+            tabBarActiveTintColor: COLORS.primary,
+tabBarIndicatorStyle: { backgroundColor: COLORS.primary },
+tabBarStyle: { backgroundColor: COLORS.background },
             tabBarLabelStyle: { fontWeight: 'bold' },
           }}
         >
