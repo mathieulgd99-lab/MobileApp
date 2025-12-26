@@ -24,17 +24,21 @@ export function useBoulders(token) {
       if (!res.error) {
         setBoulders(res.boulders || []);
       } else {
+        setBoulders([]);
         setError(res.error || 'Erreur getBoulders');
       }
-    const valid = await getValidatedBoulders(token);
-    if (!valid.error) {
+
+      const valid = await getValidatedBoulders(token);
+      if (!valid.error) {
         setValidatedBoulders(valid.boulders || []);
-    } else {
-        setError(res.error || 'Erreur getValidatedBoulders');
-    }
-      
+      } else {
+        setValidatedBoulders([]);
+        setError((prev) => prev || valid.error || 'Erreur getValidatedBoulders');
+      }
     } catch (err) {
       setError(err.message || 'Erreur loadAll');
+      setBoulders([]);
+      setValidatedBoulders([]);
     } finally {
       setLoading(false);
     }
@@ -94,7 +98,7 @@ export function useBoulders(token) {
         return 'Error delete';
       }
     },
-    [token]
+    [token, refresh]
   )
 
   const archiveBoulder = useCallback(
@@ -119,10 +123,11 @@ export function useBoulders(token) {
     validatedBoulders.some((b) => b.id === id);
   
   const getFiltered = ({ zone = null, grade = null, archived = null } = {}) => {
-    let res = boulders;
-    if (archived) res = res.filter(b => !b.archived_at)
-    if (zone) res = res.filter(b => b.zoneId === zone);
-    if (grade) res = res.filter(b => b.grade === grade);
+    let res = [...boulders];
+    if (archived === true) res = res.filter((b) => b.archived_at); // archivés
+    else if (archived === false) res = res.filter((b) => !b.archived_at); // non archivés
+    if (zone) res = res.filter((b) => b.zoneId === zone);
+    if (grade) res = res.filter((b) => b.grade === grade);
     return res;
   };
   

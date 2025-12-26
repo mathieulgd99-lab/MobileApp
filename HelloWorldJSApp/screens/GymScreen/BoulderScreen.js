@@ -7,7 +7,6 @@ import { ScrollView,
         View,
         ActivityIndicator,
         TouchableOpacity,
-        Alert,
         StyleSheet,
         SafeAreaView,
         KeyboardAvoidingView,
@@ -55,6 +54,7 @@ export default function BoulderScreen() {
     validatedBoulders,
     boulders,
     grades,
+    countGrade,
     toggleValidation,
     getFiltered,
     deleteBoulder,
@@ -86,13 +86,17 @@ export default function BoulderScreen() {
     } else {
       console.log("Erreur getValidatedBoulders :", validated.error);
     }
+    console.log("boulders : ",result.boulders)
+    console.log("Validated: ",validated.boulders)
   }
 
 
   useEffect(() => {
     (async () => {
+      console.log("loading")
       await loadBoulders();
       setLoading(false);
+      console.log("loading 2")
     })();
   }, []);
 
@@ -106,18 +110,18 @@ export default function BoulderScreen() {
   const filteredBoulders = getFiltered({
     zone: selectedZone,
     grade: selectedGrade,
-    archived: true,
+    archived: false,
   });
 
-  function countGrade(difficulty) {
-    let res = 0;
-    boulders.forEach((image) => {
-      if (image.grade === difficulty) {
-        res++
-      }
-    })
-    return res
-  }
+  // function countGrade(difficulty) {
+  //   let res = 0;
+  //   boulders.forEach((image) => {
+  //     if (image.grade === difficulty) {
+  //       res++
+  //     }
+  //   })
+  //   return res
+  // }
 
   function handleCloseModal() {
     setShowImage(false);
@@ -157,7 +161,8 @@ export default function BoulderScreen() {
 
 return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={{ padding: 16 }}
+    style={{ backgroundColor: '#121212' }}>
         <Svg height="500" width="350" style={styles.map}>
           {zones.map((zone) => (
             <Polygon
@@ -210,11 +215,11 @@ return (
                 <TouchableOpacity
                     activeOpacity={0.9}
                     onPress={() => openComments(selectedImage.id)}
-                    style={localStyles.commentButton}
+                    style={styles.commentButton}
                   >
-                  <Text style={localStyles.commentBubble}>💬</Text>
-                  <View style={localStyles.commentCountBox}>
-                    <Text style={localStyles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
+                  <Text style={styles.commentBubble}>💬</Text>
+                  <View style={styles.commentCountBox}>
+                    <Text style={styles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -257,7 +262,7 @@ return (
                   data={comments}
                   keyExtractor={(c) => String(c.id)}
                   renderItem={({ item }) => (
-                    <View style={localStyles.commentRow}>
+                    <View style={styles.commentRow}>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontWeight: '600' }}>{item.user_name}</Text>
                         <Text style={{ marginTop: 4 }}>{item.content}</Text>
@@ -303,42 +308,7 @@ return (
 }
 
 const localStyles = StyleSheet.create({
-  commentButton: {
-    position: 'absolute',
-    left: 16,
-    bottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 20,
-  },
-  commentBubble: {
-    fontSize: 20,
-    marginRight: 6,
-  },
-  commentCountBox: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  commentCountText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#000',
-  },
-  commentRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-    alignItems: 'center',
-  },
+  
   deleteButton: {
     marginLeft: 8,
     paddingHorizontal: 8,

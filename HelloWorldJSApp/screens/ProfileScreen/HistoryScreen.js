@@ -59,8 +59,7 @@ export default function HistoryScreen() {
   }
 
   const filteredBoulders = getFiltered({
-    archived: !showAll,
-  });
+    ...(showAll ? {} : { archived: false }),  });
 
   function archivedFilter() {
     setShowAll(prev => !prev)

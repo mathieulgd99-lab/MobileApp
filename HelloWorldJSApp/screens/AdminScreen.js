@@ -12,6 +12,8 @@ import { addBoulder } from '../api/auth';
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import useBoulders from './Hooks/useBoulder';
+
 // import styles from './styles';
 
 const API_BASE = "http://192.168.190.72:3000";
@@ -24,7 +26,9 @@ export default function AdminScreen() {
   const [grade, setGrade] = useState('');
   const [zoneId, setZoneId] = useState('');
 
-
+  const {
+    refresh
+  } = useBoulders(token);
   const pickImage = async () => {
     console.log("Click admin image");
   
@@ -72,6 +76,7 @@ export default function AdminScreen() {
       setZoneId('');
       setGrade('');
       setColor('');
+      await refresh()
     } catch (err) {
         console.error("uploadImage error", err);
         alert("Error during the upload");
