@@ -15,8 +15,6 @@ import { Picker } from '@react-native-picker/picker';
 import useBoulders from './Hooks/useBoulder';
 import styles from './styles';
 
-const API_BASE = "http://192.168.1.69:3000";
-
 export default function AdminScreen() {
 
   const {user, token} = useContext(AuthContext);

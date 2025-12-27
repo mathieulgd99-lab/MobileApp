@@ -11,33 +11,33 @@ import {
   ScrollView
 } from 'react-native';
 import styles from '../styles';
-import { getValidatedBoulders } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 import useBoulders from '../Hooks/useBoulder';
 import BlocksList from '../../components/BlockList';
 import useComment from '../Hooks/useComment';
-const API_BASE = "http://192.168.1.69:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 
-export default function HistoryScreen() {
-  const {user, token} = useContext(AuthContext);
+export default function HistoryScreen({ profileUser, token: tokenProp }) {
+  const { token: tokenFromCtx, user } = useContext(AuthContext);
+  const authToken = tokenProp || tokenFromCtx;
 
   const [showAll, setShowAll] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [showImage, setShowImage] = useState(false)
+  const [showImage, setShowImage] = useState(false);
+
 
   const {
     loading,
     error,
-    boulders,
     validatedBoulders,
     grades,
     deleteBoulder,
     archiveBoulder,
-    getFiltered,
     countGrade
-  } = useBoulders(token);
+  } = useBoulders(authToken, profileUser?.id);
+
 
   const {
     comments,
@@ -47,41 +47,23 @@ export default function HistoryScreen() {
     removeComment,
     getCommentCount,
     initCommentCounts,
-  } = useComment(token);
+  } = useComment(authToken);
 
-  async function loadBoulders() {
-    const validated = await getValidatedBoulders(token);
-    if (!validated.error) {
-      setValidatedBoulders(validated.boulders);
-    } else {
-      console.log("Erreur getValidatedBoulders :", validated.error);
-    }
-  }
-
-  const filteredBoulders = getFiltered({
-    ...(showAll ? {} : { archived: false }),  });
-
-  function archivedFilter() {
-    setShowAll(prev => !prev)
-  }
-
+  
   useEffect(() => {
-    (async () => {
-      await loadBoulders();
-      setLoading(false);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (validatedBoulders.length > 0) {
+    if (validatedBoulders?.length) {
       initCommentCounts(validatedBoulders);
     }
   }, [validatedBoulders]);
 
-  const handleClickImage = (image) => {
-    setSelectedImage(image);
-    setShowImage(true);
-  };
+  const filteredBoulders = validatedBoulders.filter(b => {
+    if (!showAll && b.archived_at) return false;
+    if (selectedGrade && b.grade !== selectedGrade) return false;
+    return true;
+  });
+  
+
+  const archivedFilter = () => setShowAll(prev => !prev);
 
   function handleCloseModal() {
     setShowImage(false);
@@ -104,6 +86,9 @@ export default function HistoryScreen() {
       </TouchableOpacity>
     )
   }
+
+  if (loading) return <Text>Chargement...</Text>;
+  if (error) return <Text>Erreur</Text>;
 
   return (
     <View style={localStyles.container}>
@@ -132,7 +117,10 @@ export default function HistoryScreen() {
     <BlocksList
           boulders={filteredBoulders}
           validatedBoulders={validatedBoulders}
-          onPressImage={handleClickImage}
+          onPressImage={(img) => {
+            setSelectedImage(img);
+            setShowImage(true);
+          }}
           onOpenComments={openComments}
           getCommentCount={getCommentCount}
           onToggleValidation={() => {}}
@@ -141,6 +129,7 @@ export default function HistoryScreen() {
           onArchiveBoulder={archiveBoulder}
           userRole={user.role}
         />
+
     {/* Image full-screen modal */}
     {showImage && selectedImage && (
       <Modal visible={showImage} onRequestClose={handleCloseModal} animationType="fade">
@@ -155,11 +144,11 @@ export default function HistoryScreen() {
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => openComments(selectedImage.id)}
-                style={localStyles.commentButton}
+                style={styles.commentButton}
               >
-              <Text style={localStyles.commentBubble}>💬</Text>
-              <View style={localStyles.commentCountBox}>
-                <Text style={localStyles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
+              <Text style={styles.commentBubble}>💬</Text>
+              <View style={styles.commentCountBox}>
+                <Text style={styles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
               </View>
             </TouchableOpacity>
             <View style={[
@@ -197,7 +186,7 @@ export default function HistoryScreen() {
                   data={comments}
                   keyExtractor={(c) => String(c.id)}
                   renderItem={({ item }) => (
-                    <View style={localStyles.commentRow}>
+                    <View style={styles.commentRow}>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontWeight: '600' }}>{item.user_name}</Text>
                         <Text style={{ marginTop: 4 }}>{item.content}</Text>
@@ -221,42 +210,7 @@ export default function HistoryScreen() {
   )
 }
 const localStyles = StyleSheet.create({
-  commentButton: {
-    position: 'absolute',
-    left: 16,
-    bottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 20,
-  },
-  commentBubble: {
-    fontSize: 20,
-    marginRight: 6,
-  },
-  commentCountBox: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  commentCountText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#000',
-  },
-  commentRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-    alignItems: 'center',
-  },
+
   deleteButton: {
     marginLeft: 8,
     paddingHorizontal: 8,

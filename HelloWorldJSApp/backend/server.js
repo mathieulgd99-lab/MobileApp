@@ -78,12 +78,12 @@ const upload = multer({ storage });
         const hash = await bcrypt.hash(password, 10);
         try {
           const result = await db.run('INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?)', [email, hash, display_name]);
-          const role = 'user';
-          const userId = result.lastID;
-          const token = jwt.sign({ userId, email, display_name, role }, JWT_SECRET, { expiresIn: '7d' });
-          console.log("serv.js : end", token)
-          res.json({ token, user: { id: userId, email, display_name, role } });
 
+          const userId = result.lastID;
+          const user = await db.get('SELECT id, email, display_name, role, total_points, created_at FROM users WHERE id = ?', [userId]);
+          const token = jwt.sign({ userId: user.id, email: user.email, display_name: user.display_name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+          console.log("serv.js : end", token)
+          res.json({ token, user });
         } catch (err) {
           console.error("error during try")
           res.status(400).json({ error: 'User exists' });
@@ -117,7 +117,6 @@ const upload = multer({ storage });
       }
     });
     
-    // Récupère tous les commentaires
     app.get('/api/all_comments', async (req, res) => {
       try {
         console.log("server.js : selecting all comments");
@@ -524,7 +523,62 @@ const upload = multer({ storage });
         res.status(500).json({ error: "Internal server error" });
       }
     });
+    app.get('/api/users/:userId', auth, async (req, res) => {
+      try {
+        const userId = Number(req.params.userId);
+        if (!userId) {
+          return res.status(400).json({ error: 'Missing or invalid user id' });
+        }
+    
+        const user = await db.get(
+          `SELECT id, email, display_name, role, total_points, created_at
+           FROM users
+           WHERE id = ?`,
+          [userId]
+        );
+    
+        if (!user) return res.status(404).json({ error: 'User not found' });
+    
+        const requesterId = req.user.userId;
+        const requesterRole = req.user.role;
+    
+        if (requesterId !== userId && requesterRole !== 'admin') {
+          delete user.email;
+        }
+    
+        res.json({ user });
+      } catch (err) {
+        console.error('Error get user by id:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+    
 
+    app.get('/api/users/:userId/boulders', auth, async (req, res) => {
+      try {
+        const userId = Number(req.params.userId);
+        if (!userId) {
+          return res.status(400).json({ error: 'Invalid user id' });
+        }
+    
+        const boulders = await db.all(
+          `
+          SELECT boulder.*
+          FROM boulder
+          JOIN boulder_validations bv
+            ON bv.boulder_id = boulder.id
+          WHERE bv.user_id = ?
+          `,
+          [userId]
+        );
+    
+        res.json({ boulders });
+      } catch (err) {
+        console.error('Error fetching validated boulders for user:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     
 }

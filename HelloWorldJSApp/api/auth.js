@@ -220,7 +220,6 @@ export async function getComment(token, boulderId) {
       console.log('Server error', json);
       return { error: json };
     }
-    console.log("sortie getCOmment")
     return json;
   } catch (err) {
     console.error('Get comment error', err);
@@ -316,6 +315,37 @@ export async function getLeaderboard(token) {
     return json;
   } catch (err) {
     console.error('ArchivedBoulder error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function getUserBoulders(userId, token) {
+  try {
+    const res = await fetch(`${API_BASE}/api/users/${userId}/boulders`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return json
+  } catch (err) {
+    console.error('getUserBoulders error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function getUserProfile(userId, token) {
+  try {
+    console.log("Entrée getUserProfile, userId: ",userId)
+    const res = await fetch(`${API_BASE}/api/users/${userId}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return json
+  } catch (err) {
+    console.error('getUserProfile error', err);
     return { error: err.message || err };
   }
 }

@@ -16,6 +16,7 @@ import { COLORS } from './screens/colors';
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createStackNavigator();
+const RootStack = createStackNavigator();
 
 /**
  * Composant qui affiche les tabs (pour les utilisateurs connectés)
@@ -58,13 +59,31 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? (
-        <AppTabs />
-      ) : (
+      {!user ? (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-          {/* ProfileScreen fait login / register ; on peut ajouter d'autres écrans auth ici */}
-          <AuthStack.Screen name="AuthProfile" component={ConnexionScreen} />
+          <AuthStack.Screen
+            name="AuthProfile"
+            component={ConnexionScreen}
+          />
         </AuthStack.Navigator>
+      ) : (
+        <RootStack.Navigator>
+          {/* APP NORMALE AVEC TABS */}
+          <RootStack.Screen
+            name="MainTabs"
+            component={AppTabs}
+            options={{ headerShown: false }}
+          />
+
+          {/* PROFIL D'UN AUTRE UTILISATEUR (SANS TABS) */}
+          <RootStack.Screen
+            name="UserProfile"
+            component={ProfileScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+        </RootStack.Navigator>
       )}
     </NavigationContainer>
   );

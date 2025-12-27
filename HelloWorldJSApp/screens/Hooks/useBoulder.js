@@ -6,10 +6,11 @@ import {
   archiveBoulders,
   deleteBoulders,
   getLeaderboard,
+  getUserBoulders
 } from '../../api/auth';
 
 
-export function useBoulders(token) {
+export function useBoulders(token,userId = null) {
   const [boulders, setBoulders] = useState([]);
   const [validatedBoulders, setValidatedBoulders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export function useBoulders(token) {
         setError(res.error || 'Erreur getBoulders');
       }
 
-      const valid = await getValidatedBoulders(token);
+      const valid = userId ? await getUserBoulders(userId, token) : await getValidatedBoulders(token);
       if (!valid.error) {
         setValidatedBoulders(valid.boulders || []);
       } else {
@@ -42,7 +43,7 @@ export function useBoulders(token) {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token,userId]);
 
   useEffect(() => {
     loadAll();

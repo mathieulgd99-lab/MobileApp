@@ -106,7 +106,7 @@ export default function RankingScreen() {
 
   const onPressUser = (user) => {
     if (!user) return;
-    navigation.navigate('Profile', { userId: user.id });
+    navigation.navigate('UserProfile', { userId: user.id });
   };
 
   const sorted = [...users].sort((a, b) => (b.total_points || 0) - (a.total_points || 0));

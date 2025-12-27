@@ -53,7 +53,7 @@ export default function BlocksList({
             if (type === 'delete') {
               onDeleteBoulder(item);
             } else {
-              res = await onArchiveBoulder(item);
+              const res = await onArchiveBoulder(item);
               if (res?.archived) {
                 setSnackbarText('🟢 Boulder archived successfully');
               } else if (res.archived === false) {
