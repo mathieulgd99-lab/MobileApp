@@ -146,7 +146,7 @@ connexion_inputText: {
 
 // bouton principal
 connexion_button: {
-  backgroundColor: COLORS.primary,
+  backgroundColor: COLORS.primaryDark,
   width: '100%',
   paddingVertical: 14,
   borderRadius: 10,
@@ -200,7 +200,7 @@ connexion_logoutText: {
 },
 connexion_welcome: {
   fontSize: 28,
-  color: COLORS.primary,
+  color: COLORS.black,
   fontWeight: '800',
   marginBottom: 4,
   textAlign: 'center',
@@ -218,7 +218,9 @@ logo: {
   width: 140,
   height: 140,
   resizeMode: "contain",
-  alignSelf: "center",
+  position: "absolute",
+  top: 20,
+  left: 20,
   marginBottom: 20,
 },
 

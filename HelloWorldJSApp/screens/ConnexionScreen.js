@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import styles from './styles';
 
@@ -48,9 +48,9 @@ export default function ConnexionScreen() {
   //    FORMULAIRE
   // --------------------------
   return (
-    <View style={styles.connexion_container}>
+    <ScrollView contentContainerStyle={styles.connexion_container} keyboardShouldPersistTaps="handled">
 
-      <Image source={require("../wall_images/vietclimb_logo.png")} style={styles.logo} />
+      <Image source={require("../wall_images/logo_with_vietclimb_no_back.png")} style={styles.logo} />
       
       <Text style={styles.connexion_welcome}>
         Chào mừng đến với ĐáBloc !
@@ -121,6 +121,6 @@ export default function ConnexionScreen() {
         </View>
 
       </View>
-    </View>
+    </ScrollView>
   );
 }
