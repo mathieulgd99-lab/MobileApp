@@ -14,4 +14,40 @@ export const COLORS = {
 
   background: '#1e1e1e',
   tabInactive: 'gray',
+
+  text: "#FFFFFF",
+  
+  // Secondary accent (used for secondary buttons/links)
+  secondary: '#4EA8FF',
+
+
+  // Couleurs des blocs
+  bloc_black: "black",
+  bloc_blue: "blue",
+  bloc_green: "green",
+  bloc_orange: "orange",
+  bloc_pink: "pink",
+  bloc_purple: "blueviolet",
+  bloc_red: "red",
+  bloc_white: "white",
+  bloc_yellow: "gold",
 };
+
+
+export const BLOC_COLORS = [
+  "black",
+  "blue",
+  "green",
+  "orange",
+  "pink",
+  "blueviolet",
+  "red",
+  "white",
+  "gold",
+  "grey",
+];
+
+
+export default COLORS;
+
+
