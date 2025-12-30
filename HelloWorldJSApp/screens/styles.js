@@ -516,6 +516,239 @@ logo: {
     color: '#aaa',
     marginBottom: 8,
   },
+
+
+  chipContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginVertical: 10,
+},
+
+chip: {
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: '#ccc',
+  margin: 5,
+  backgroundColor: '#f6f6f6',
+},
+
+chipSelected: {
+  backgroundColor: '#FF7A00', // Orange VietClimb
+  borderColor: '#FF7A00',
+},
+
+chipText: {
+  color: '#333',
+  fontWeight: '600',
+},
+dropdownHeader: {
+  padding: 12,
+  backgroundColor: "#eee",
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: "#ccc",
+},
+
+dropdownHeaderText: {
+  fontSize: 16,
+  color: "#333",
+  fontWeight: "600",
+},
+
+dropdownPanel: {
+  marginTop: 6,
+  backgroundColor: "white",
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  overflow: "hidden",
+},
+
+dropdownItem: {
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+dropdownItemText: {
+  fontSize: 16,
+  color: "#444",
+},
+
+  creator_container: {
+    flex: 1,
+    padding: 20,
+     backgroundColor: COLORS.background,
+  },
+
+  creator_title: {
+    alignItems: 'center',
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: COLORS.text,
+    textAlign: "center",
+  },
+
+  creator_optionButton: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 10,
+    marginVertical: 5,
+  },
+
+  creator_optionSelected: {
+     backgroundColor: COLORS.primaryLight,
+     borderColor: COLORS.primary,
+  },
+
+  creator_optionText: {
+    fontSize: 18,
+    textAlign: "center",
+    color: COLORS.text,
+  },
+
+  creator_mainButton: {
+     backgroundColor: COLORS.primary,
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 10,
+  },
+
+  creator_mainButtonText: {
+  color: COLORS.background,
+    textAlign: "center",
+    fontSize: 18,
+  },
+
+  creator_secondaryButton: {
+     borderColor: COLORS.secondary,
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+
+  creator_secondaryButtonText: {
+    textAlign: "center",
+  color: COLORS.secondary,
+  },
+
+  creator_previewCard: {
+    marginVertical: 10,
+    borderWidth: 1,
+  borderColor: COLORS.primary,
+    borderRadius: 10,
+    padding: 5,
+  },
+
+  creator_previewTouchable: {
+    position: 'relative',
+    overflow: 'visible',
+  },
+
+  creator_previewImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+  },
+
+  creator_previewTitle: {
+    textAlign: "center",
+    fontSize: 16,
+    marginTop: 5,
+  color: COLORS.text,
+  },
+
+  creator_bigImage: {
+    width: "100%",
+    height: 250,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+
+  creator_row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginVertical: 10,
+  },
+
+  creator_colorCircle: {
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    marginRight: 10,
+  borderColor: COLORS.primary,
+  },
+
+  creator_subtitle: {
+    marginTop: 10,
+    fontWeight: "bold",
+    fontSize: 16,
+    color: COLORS.text,
+  },
+
+  creator_dropdown: {
+    marginTop: 10,
+  },
+
+  creator_dropdownLabel: {
+    padding: 10,
+    borderWidth: 1,
+  borderColor: COLORS.primary,
+    borderRadius: 10,
+  color: COLORS.text,
+  },
+
+  creator_dropdownList: {
+    borderWidth: 1,
+  borderColor: COLORS.primary,
+    borderRadius: 10,
+    marginTop: 5,
+  },
+
+  creator_dropdownItem: {
+    padding: 10,
+  },
+
+  creator_dropdownText: {
+    fontSize: 16,
+  color: COLORS.text,
+  },
+
+  creator_validateButton: {
+     backgroundColor: COLORS.secondary,
+    padding: 15,
+    marginTop: 20,
+    borderRadius: 10,
+  },
+
+  creator_validateText: {
+     color: COLORS.background,
+    fontSize: 18,
+    textAlign: "center",
+  },
+  creator_editIcon: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 8,
+    borderRadius: 20,
+    zIndex: 9999,
+    elevation: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+  }
+
+
 });
 
 export default styles;

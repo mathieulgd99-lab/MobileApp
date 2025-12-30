@@ -7,13 +7,13 @@ import {
   Alert,
   ScrollView
 } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
-import { addBoulder } from '../api/auth';
+import { AuthContext } from '../../context/AuthContext';
+import { addBoulder } from '../../api/auth';
 import { useState } from 'react'
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import useBoulders from './Hooks/useBoulder';
-import styles from './styles';
+import useBoulders from '../Hooks/useBoulder';
+import styles from '../styles';
 
 export default function AdminScreen() {
 
