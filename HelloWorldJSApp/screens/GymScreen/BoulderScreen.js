@@ -27,7 +27,7 @@ const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur
   const zones = [
-    { id: 'murC', points: ' 40,300 20,300 20,400 80,400 60,380 40,380', label: 'Mur ouest' },
+    { id: 'murCoin', points: ' 40,300 20,300 20,400 80,400 60,380 40,380', label: 'Mur ouest' },
     { id: 'murDalle', points: '20,300 40,300 50,250 40,200 20,200', label: 'Mur O-milieu' },
     { id: 'murTension', points: '20,200 40,200 40,120 20,100', label: 'Mur O-haut' },
     { id: 'murToit', points: '20,100 40,120 50,80 120,80 130,50 40,50', label: 'Mur N-O' },

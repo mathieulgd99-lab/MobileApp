@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, TouchableOpacity, Image, FlatList, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 import styles from '../styles';
 import { BLOC_COLORS } from '../colors';
+import { AuthContext } from '../../context/AuthContext';
+import { addBoulder} from '../../api/auth';
 
 
 const WALLS = [
+  { label: 'Mur Coin', value: 'murCoin' },
   { label: 'Mur Dalle', value: 'murDalle' },
   { label: 'Mur Tension', value: 'murTension' },
   { label: 'Mur Toit', value: 'murToit' },
@@ -22,74 +25,87 @@ const WALLS = [
 const DIFFICULTIES = Array.from({ length: 14 }, (_, i) => String(i + 1));
 
 export default function BlocCreatorScreen() {
+  const { user: me, token } = useContext(AuthContext);
   const [phase, setPhase] = useState(1);
   const [selectedWall, setSelectedWall] = useState(null);
 
   const [images, setImages] = useState([]);
-  const [currentImage, setCurrentImage] = useState(null);
-
-  const [blocs, setBlocs] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(null);
+  
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState(null);
   const [difficultyOpen, setDifficultyOpen] = useState(false);
 
 
   const pickImage = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync();
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+  
     if (!res.canceled) {
-      setCurrentImage(res.assets[0].uri);
+      const asset = res.assets[0];
+  
+      setImages(prev => {
+        const next = [...prev, { asset, blocs: [] }];
+        setCurrentImageIndex(next.length - 1);
+        return next;
+      });
+  
       setPhase(3);
     }
   };
-
+  
+  
+  
   const addBloc = () => {
-    if (!selectedColor || !selectedDifficulty)
-      return alert("Select a color and difficulty");
-
+    if (!selectedColor || !selectedDifficulty || currentImageIndex === null) {
+      return alert("Missing data");
+    }
+  
     const newBloc = {
-      id: Date.now(),
       color: selectedColor,
       difficulty: selectedDifficulty,
     };
-
-    // Vérifie si l'image existe déjà dans la liste des images
-    const found = images.find(img => img.image === currentImage);
-
-    let updated;
-
-    if (found) {
-      // Si l'image est déjà enregistrée → on lui ajoute un bloc
-      updated = images.map(img =>
-        img.image === currentImage
+  
+    setImages(prev =>
+      prev.map((img, i) =>
+        i === currentImageIndex
           ? { ...img, blocs: [...img.blocs, newBloc] }
           : img
-      );
-    } else {
-      // Si c'est la première fois qu'on ajoute un bloc sur cette image
-      updated = [...images, { image: currentImage, blocs: [newBloc] }];
-    }
-
-    setImages(updated);
-
-    // Reset UI
+      )
+    );
+  
     setSelectedColor(null);
     setSelectedDifficulty(null);
-
-    alert("Boulder added!");
+  
+    alert("Bloc added to image");
   };
 
-
-  const validateImage = () => {
-    setImages([...images, {
-      image: currentImage,
-      blocs: blocs,
-    }]);
-
-    setBlocs([]);
-    setCurrentImage(null);
-    setPhase(2);
-  };
-
+  const submitAllBoulders = async () => {
+    try {
+      for (const img of images) {
+        for (const bloc of img.blocs) {
+          await addBoulder(
+            img.asset,
+            selectedWall,
+            bloc.difficulty,
+            bloc.color,
+            token
+          );
+        }
+      }
+  
+      alert("All boulders uploaded!");
+      setImages([]);
+      setPhase(1);
+  
+    } catch (err) {
+      console.error(err);
+      alert("Error while uploading boulders");
+    }
+  };  
+  
   return (
     <View style={styles.creator_container}>
 
@@ -124,31 +140,27 @@ export default function BlocCreatorScreen() {
           <TouchableOpacity style={styles.creator_mainButton} onPress={pickImage}>
             <Text style={styles.creator_mainButtonText}>Choose an image</Text>
           </TouchableOpacity>
-
+          <ScrollView>
           <FlatList
             data={images}
-            keyExtractor={(item) => item.image}
-            renderItem={({ item }) => (
-                  <View style={styles.creator_previewCard}>
-                                  <TouchableOpacity
-                    onPress={() => {
-                      setCurrentImage(item.image);
-                      setPhase(3);
-                    }}
-                    style={styles.creator_previewTouchable}
-                  >
-                    <Image source={{ uri: item.image }} style={styles.creator_previewImage} />
-
-                    {/* Icône crayon */}
-                    <View style={styles.creator_editIcon}>
-                      <Ionicons name="create-outline" size={22} color="#fff" style={{ opacity: 0.9 }} />
-                    </View>
-                  </TouchableOpacity>
-
-                <Text style={styles.creator_previewTitle}>{item.blocs.length} blocs</Text>
-              </View>
+            keyExtractor={(_, i) => String(i)}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrentImageIndex(index);
+                  setPhase(3);
+                }}
+              >
+                <Image
+                  source={{ uri: item.asset.uri }}
+                  style={styles.creator_previewImage}
+                />
+                <Text>{item.blocs.length} blocs</Text>
+              </TouchableOpacity>
             )}
           />
+          </ScrollView>
+
 
           <TouchableOpacity
             style={styles.creator_secondaryButton}
@@ -158,6 +170,16 @@ export default function BlocCreatorScreen() {
           </TouchableOpacity>
         </View>
       )}
+      {images.length > 0 && (
+        <TouchableOpacity
+          style={styles.creator_mainButton}
+          onPress={submitAllBoulders}
+        >
+          <Text style={styles.creator_mainButtonText}>
+            Upload all boulders
+          </Text>
+        </TouchableOpacity>
+      )}
 
 
 
@@ -165,9 +187,10 @@ export default function BlocCreatorScreen() {
       {phase === 3 && (
         <ScrollView style={{ flex: 1 }}>
           <Text style={styles.creator_title}> Add a boulder </Text>
-
-          <Image source={{ uri: currentImage }} style={styles.creator_bigImage} />
-
+          <Image
+            source={{ uri: images[currentImageIndex]?.asset.uri }}
+            style={styles.creator_bigImage}
+          />
           <Text style={styles.creator_subtitle}>Color of the boulder</Text>
           <View style={styles.creator_row}>
             {BLOC_COLORS.map((c) => (
@@ -215,24 +238,26 @@ export default function BlocCreatorScreen() {
             </View>
 
 
-          <TouchableOpacity style={styles.creator_mainButton} onPress={addBloc}>
-            <Text style={styles.creator_mainButtonText}>Add boulder</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.creator_mainButton} onPress={addBloc}>
+              <Text style={styles.creator_mainButtonText}>Add boulder</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.creator_secondaryButton}
+              onPress={() => {
+                setCurrentImageIndex(null);
+                setPhase(2);
+              }}
+            >
+              <Text style={styles.creator_secondaryButtonText}>
+                Back to images
+              </Text>
+            </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.creator_secondaryButton}
             onPress={() => {
-              setCurrentImage(null);
-              setPhase(2);
-            }}
-          >
-            <Text style={styles.creator_secondaryButtonText}>Add another image</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.creator_secondaryButton}
-            onPress={() => {
-              setCurrentImage(null);
               setImages([]);
               setPhase(1);
             }}
