@@ -392,12 +392,51 @@ export async function getUserSessionsCalendar(userId, token, month) {
 
 
 export async function updatePassword(token, newPassword) {
-
+  try {
+    console.log("entrée updatePassword: ")
+    const url = `${API_BASE}/api/change/password`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+        },
+      body: JSON.stringify({ newPassword: newPassword })
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    return json;
+  } catch (err) {
+    console.error('updatePassword error', err);
+    return { error: err.message || err };
+  }
 }
-
 export async function updateDisplayName(token, newName) {
+  try {
+    console.log("entrée updateDisplayName");
+    const url = `${API_BASE}/api/change/username`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ newUsername: newName }),
+    });
 
+    const json = await res.json();
+    if (!res.ok) {
+      console.log('Server error', json);
+      return { error: json };
+    }
+    return json;
+  } catch (err) {
+    console.error('updateDisplayName error', err);
+    return { error: err.message || err };
+  }
 }
-
 
 

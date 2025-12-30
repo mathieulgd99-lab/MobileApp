@@ -73,10 +73,15 @@ export const AuthProvider = ({children}) => {
         await AsyncStorage.removeItem('token');
     }
 
+    const updateUser = (user) => {
+      setUser(user);
+    };
+    
+
     const isAdmin = user?.role === 'admin';
 
     return (
-        <AuthContext.Provider value={{user,token, isAdmin,log_in, reg, log_out}}>
+        <AuthContext.Provider value={{user,token, isAdmin,log_in, reg, log_out, updateUser}}>
           {!loading && children}
         </AuthContext.Provider>
       );

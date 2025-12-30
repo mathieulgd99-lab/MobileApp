@@ -33,7 +33,12 @@ function auth(req, res, next) {
   if (!token) return res.status(401).send('No token');
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload;
+    // req.user = payload;
+    req.user = {
+      id: payload.userId,
+      email: payload.email,
+      role: payload.role,
+    };
     next();
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' });
@@ -99,7 +104,7 @@ async function getOrCreateTodaySession(db, userId) {
 
           const userId = result.lastID;
           const user = await db.get('SELECT id, email, display_name, role, total_points, created_at FROM users WHERE id = ?', [userId]);
-          const token = jwt.sign({ userId: user.id, email: user.email, display_name: user.display_name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+          const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
           console.log("serv.js : end", token)
           res.json({ token, user });
         } catch (err) {
@@ -119,10 +124,72 @@ async function getOrCreateTodaySession(db, userId) {
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
         const role = user.role || 'user';
-        const token = jwt.sign({ userId: user.id, email, display_name: user.display_name, role, created_at: user.created_at}, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id, email, role}, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, user: { id: user.id, email, display_name: user.display_name, role, created_at: user.created_at } });
         console.log("server.js : end login ")
     });
+
+    app.post('/api/change/password', auth, async (req, res) => {
+      console.log("server.js : start change pw");
+    
+      const { newPassword } = req.body;
+      if (!newPassword) {
+        return res.status(400).json({ error: 'You must specify new password' });
+      }
+    
+      // if (newPassword.length < 6) {
+      //   return res.status(400).json({ error: 'Password too short (min 6)' });
+      // }
+    
+      try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+        await db.run(
+          `UPDATE users SET password_hash = ? WHERE id = ?`,
+          [hashedPassword, req.user.id]
+        );
+    
+        console.log("server.js : end change pw");
+        res.json({ success: true });
+      } catch (err) {
+        console.error('change password error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+    
+
+    app.post('/api/change/username', auth, async (req, res) => {
+      console.log("server.js : start change username");
+    
+      const { newUsername } = req.body;
+      console.log("New username : ", newUsername)
+      if (!newUsername) {
+        return res.status(400).json({ error: 'You must specify new username' });
+      }
+    
+      // if (newUsername.length < 3) {
+      //   return res.status(400).json({ error: 'Username too short (min 3)' });
+      // }
+    
+      try {
+        await db.run(
+          `UPDATE users SET display_name = ? WHERE id = ?`,
+          [newUsername, req.user.id]
+        );
+
+        const updatedUser = await db.get(
+          `SELECT id, email, display_name, role, created_at
+           FROM users WHERE id = ?`,
+          [req.user.id]
+        );
+        console.log("server.js : end change username");
+        res.json({ success: true, user: updatedUser });
+      } catch (err) {
+        console.error('change username error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+    
 
     app.get('/api/all_users', async (req, res) => {
       try {
