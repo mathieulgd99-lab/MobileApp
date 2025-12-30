@@ -63,6 +63,24 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+async function getOrCreateTodaySession(db, userId) {
+  const session = await db.get(`
+    SELECT id
+    FROM sessions
+    WHERE user_id = ?
+      AND date(started_at) = date('now')
+    LIMIT 1
+  `, [userId]);
+
+  if (session) return session.id;
+
+  const result = await db.run(`
+    INSERT INTO sessions (user_id)
+    VALUES (?)
+  `, [userId]);
+
+  return result.lastID;
+}
 
 (async () => {
     const db = await initDb();
@@ -295,12 +313,13 @@ const upload = multer({ storage });
         const newCount = oldCount + 1;
         const newPoint = Math.floor(1000 / newCount);
         const delta = newPoint - oldPoint;
+        const sessionId = await getOrCreateTodaySession(db, userId);
+
         await db.run(
-          `INSERT INTO boulder_validations (user_id, boulder_id)
-           VALUES (?, ?)`,
-          [userId, boulderId]
+          `INSERT INTO boulder_validations (user_id, boulder_id, session_id)
+           VALUES (?, ?, ?)`,
+          [userId, boulderId, sessionId]
         );
-    
         await db.run(
           `UPDATE boulder
            SET validations_count = ?, current_point = ?
@@ -575,6 +594,66 @@ const upload = multer({ storage });
         res.json({ boulders });
       } catch (err) {
         console.error('Error fetching validated boulders for user:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+
+    app.get('/api/users/:userId/stats/sessions-calendar', auth, async (req, res) => {
+      try {
+        const userId = Number(req.params.userId);
+        const { month } = req.query;
+    
+        const days = await db.all(`
+          SELECT
+            date(started_at) AS day
+          FROM sessions
+          WHERE user_id = ?
+            AND strftime('%Y-%m', started_at) = ?
+          GROUP BY day
+        `, [userId, month]);
+    
+        res.json({
+          month,
+          days: days.map(d => d.day),
+        });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.get('/api/users/:userId/stats/sessions-timeline', auth, async (req, res) => {
+      try {
+        const userId = Number(req.params.userId);
+        const { range = 'month' } = req.query;
+    
+        let groupBy;
+    
+        if (range === 'week') {
+          groupBy = "strftime('%Y-%W', started_at)";
+        } else if (range === 'year') {
+          groupBy = "strftime('%Y-%m', started_at)";
+        } else if (range === 'all') {
+          groupBy = "strftime('%Y', started_at)";
+        } else {
+          // month
+          groupBy = "strftime('%Y-%m-%d', started_at)";
+        }
+    
+        const data = await db.all(`
+          SELECT
+            ${groupBy} AS period,
+            COUNT(*) AS sessions
+          FROM sessions
+          WHERE user_id = ?
+          GROUP BY period
+          ORDER BY period ASC
+        `, [userId]);
+    
+        res.json({ range, data });
+      } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal server error' });
       }
     });

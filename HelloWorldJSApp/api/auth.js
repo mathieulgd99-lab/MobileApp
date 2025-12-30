@@ -350,12 +350,52 @@ export async function getUserProfile(userId, token) {
   }
 }
 
+export async function getUserSessions(userId, token, range = 'month') {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/users/${userId}/stats/sessions-timeline?range=${range}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-export async function updatePassword(newPassword) {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('getUserSessions error', err);
+    return { error: err.message || err };
+  }
+}
+
+export async function getUserSessionsCalendar(userId, token, month) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/users/${userId}/stats/sessions-calendar?month=${month}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error('getUserSessionsCalendar error', err);
+    return { error: err.message || err };
+  }
+}
+
+
+export async function updatePassword(token, newPassword) {
 
 }
 
-export async function updateDisplayName(newName) {
+export async function updateDisplayName(token, newName) {
 
 }
 
