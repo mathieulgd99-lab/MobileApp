@@ -68,9 +68,9 @@ export const AuthProvider = ({children}) => {
     }
 
     const log_out = async () => {
-        setUser(null)
-        setToken(null)
-        await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('token');
+      setUser(null)
+      setToken(null)
     }
 
     const updateUser = (user) => {

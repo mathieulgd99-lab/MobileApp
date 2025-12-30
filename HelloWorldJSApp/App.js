@@ -58,7 +58,7 @@ function RootNavigator() {
   const { user } = useContext(AuthContext);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer key={user ? 'user' : 'guest'}>
       {!user ? (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
           <AuthStack.Screen

@@ -23,7 +23,7 @@ const API_BASE = "http://192.168.190.72:3000";
 const Tab = createMaterialTopTabNavigator();
 
 export default function ProfileScreen({ route, navigation }) {
-  const { user: me, token, updateUser } = useContext(AuthContext);
+  const { user: me, token, updateUser, log_out } = useContext(AuthContext);
   const userIdParam = route?.params?.userId;
 
   const [profileUser, setProfileUser] = useState(null);
@@ -85,6 +85,26 @@ export default function ProfileScreen({ route, navigation }) {
       setShowChangeUsername(true);
     }
   }
+
+
+  function handleDisconnect() {
+    Alert.alert(
+      'Disconnect',
+      'Are you sure you want to disconnect ?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Disconnect',
+          style: 'destructive',
+          onPress: () => {
+            setSettingsVisible(false);
+            log_out();
+          },
+        },
+      ]
+    );
+  }
+
 
   async function submitPasswordChange() {
     // validations côté client
@@ -228,6 +248,12 @@ export default function ProfileScreen({ route, navigation }) {
               >
                 <Text style={styles.menuText}>Change password</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                    style={[styles.menuItem, styles.disconnectItem]}
+                    onPress={handleDisconnect}
+                  >
+                    <Text style={styles.disconnectText}>Disconnect</Text>
+                </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
         </TouchableOpacity>
@@ -539,6 +565,15 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: '#fff',
+    fontWeight: '600',
+  },
+  disconnectItem: {
+    borderBottomWidth: 0,
+  },
+  
+  disconnectText: {
+    color: '#ff4d4f',
+    fontSize: 15,
     fontWeight: '600',
   },
 });
