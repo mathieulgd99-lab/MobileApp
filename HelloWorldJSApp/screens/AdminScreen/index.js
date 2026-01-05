@@ -83,17 +83,6 @@
             </Text>
           </View>
   
-          {isMyProfile && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Settings')}
-            >
-              <Ionicons
-                name="settings-outline"
-                size={26}
-                color="#fff"
-              />
-            </TouchableOpacity>
-          )}
         </View>
   
         {/* TABS */}

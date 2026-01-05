@@ -112,7 +112,7 @@ export default function BlocCreatorScreen() {
 
       {/* ------------------------ PHASE 1 : SELECT WALL ------------------------ */}
       {phase === 1 && (
-        <View>
+        <ScrollView>
           <Text style={styles.creator_title}> Choose a wall </Text>
 
           {WALLS.map((w) => (
@@ -127,7 +127,7 @@ export default function BlocCreatorScreen() {
               <Text style={styles.creator_optionText}>{w.label}</Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       )}
 
 

@@ -400,7 +400,7 @@ export default function ProfileScreen({ route, navigation }) {
           <Tab.Screen name="Statistic">
             {() => (
               <StatisticScreen
-                profileUser={profileUser}
+                user={profileUser}
                 token={token}
               />
             )}

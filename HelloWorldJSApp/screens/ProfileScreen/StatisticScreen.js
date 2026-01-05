@@ -14,12 +14,13 @@ export default function StatisticScreen({ user, token }) {
   const [activeDays, setActiveDays] = useState([]);
 
   useEffect(() => {
-    fetchSessions();
+    fetchSessions(user,range);
   }, [range]);
 
   async function fetchSessions() {
     setLoadingTimeline(true);
     const res = await getUserSessions(user.id, token, range);
+    console.log("sessions timeline response:", res);
     if (!res.error) {
       setData(res.data);
     }

@@ -84,7 +84,7 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
 
         const json = await res.json();
         if (!res.ok) {
-        console.log('Server error', json);
+        console.log('AddBoulder error', json);
         return { error: json };
         }
         console.log("Sort de addBoulder auth.js")
@@ -103,7 +103,7 @@ export async function getBoulders() {
       console.log("getBoulders")
       const json = await res.json();
       if (!res.ok) {
-        console.log('Server error', json);
+        console.log('getBoulder error', json);
         return { error: json };
       }
       return json;
@@ -124,7 +124,7 @@ export async function getValidatedBoulders(token) {
 
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('GetValidatedBoulder error', json);
       return { error: json };
     }
     console.log("end get validatedboulders :")
@@ -148,7 +148,7 @@ export async function markBoulderAsCompleted(boulderId, token) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('markBoulderAsCompleted error', json);
       return { error: json };
     }
     console.log("sortie markboulderascompleted : ")
@@ -172,7 +172,7 @@ export async function addComment(token, commentary, boulder_id) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('AddComment error', json);
       return { error: json };
     }
     console.log("sortie add comment : ")
@@ -194,7 +194,7 @@ export async function deleteComment(token, commentId) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('DeleteComment error', json);
       return { error: json };
     }
     console.log("sortie delete comment")
@@ -217,7 +217,7 @@ export async function getComment(token, boulderId) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('GetComment error', json);
       return { error: json };
     }
     return json;
@@ -238,7 +238,7 @@ export async function deleteBoulders(token, boulderId) {
     })
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('DeleteBoulders error', json);
       return { error: json };
     }
     console.log("sortie deleteBoulder")
@@ -263,7 +263,7 @@ export async function archiveBoulders(token, boulderId) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('archiveBoulders error', json);
       return { error: json };
     }
     console.log("sortie archiveBoulders")
@@ -286,7 +286,7 @@ export async function getUserPoints(token,userId){
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('getUserPoints error', json);
       return { error: json };
     }
     console.log("res UserPoints : ",json)
@@ -308,7 +308,7 @@ export async function getLeaderboard(token) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('getLeaderboard error', json);
       return { error: json };
     }
     console.log("res leaderboard : ",json)
@@ -352,6 +352,8 @@ export async function getUserProfile(userId, token) {
 
 export async function getUserSessions(userId, token, range = 'month') {
   try {
+    console.log("Entrée getUserSessions")
+    console.log("Entrée getUserSessions userId: ",userId,"range :", range)
     const res = await fetch(
       `${API_BASE}/api/users/${userId}/stats/sessions-timeline?range=${range}`,
       {
@@ -405,7 +407,7 @@ export async function updatePassword(token, newPassword) {
     });
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('UpdatePassword error', json);
       return { error: json };
     }
     return json;
@@ -429,7 +431,7 @@ export async function updateDisplayName(token, newName) {
 
     const json = await res.json();
     if (!res.ok) {
-      console.log('Server error', json);
+      console.log('updateDisplayName error', json);
       return { error: json };
     }
     return json;

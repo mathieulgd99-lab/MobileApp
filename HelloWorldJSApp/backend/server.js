@@ -282,7 +282,7 @@ async function getOrCreateTodaySession(db, userId) {
       console.log("GET /api/boulders/validated");
     
       try {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         if (!userId) {
           return res.json({ boulders: [] });
         } else {
@@ -303,8 +303,8 @@ async function getOrCreateTodaySession(db, userId) {
 
     app.post('/api/boulders/toggle-validation', auth, async (req, res) => {
       console.log("POST /api/boulders/toggle-validation");
-    
-      const userId = req.user.userId;
+      console.log("req.user =", req.user);
+      const userId = req.user.id;
       const boulderId = req.body.boulder;
     
       if (!boulderId) {
