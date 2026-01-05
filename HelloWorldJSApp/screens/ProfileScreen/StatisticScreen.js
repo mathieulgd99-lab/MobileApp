@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import dayjs from 'dayjs';
+import { BarChart } from 'react-native-chart-kit';
+
 
 import { getUserSessions, getUserSessionsCalendar } from '../../api/auth';
 import styles_profile from './styles_profile.js';
@@ -12,7 +14,7 @@ export default function StatisticScreen({ user, token }) {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY-MM'));
   const [activeDays, setActiveDays] = useState([]);
-
+  const screenWidth = Dimensions.get('window').width;
   useEffect(() => {
     fetchSessions(user,range);
   }, [range]);
@@ -23,6 +25,7 @@ export default function StatisticScreen({ user, token }) {
     console.log("sessions timeline response:", res);
     if (!res.error) {
       setData(res.data);
+      
     }
     setLoadingTimeline(false);
   }
@@ -36,9 +39,20 @@ export default function StatisticScreen({ user, token }) {
     const res = await getUserSessionsCalendar(user.id, token, currentMonth);
     if (!res.error) {
       setActiveDays(res.days || []);
+      
     }
     setLoadingCalendar(false);
   }
+
+  const labels = data.map(item =>
+    range === 'month'
+      ? dayjs(item.period).format('DD')
+      : range === 'year'
+      ? dayjs(item.period).format('MMM')
+      : item.period
+  );
+  
+  const values = data.map(item => item.sessions);
 
   const daysInMonth = Array.from(
     { length: dayjs(currentMonth).daysInMonth() },
@@ -68,19 +82,31 @@ export default function StatisticScreen({ user, token }) {
       </View>
 
       {/* Timeline */}
-      {loadingTimeline ? (
-        <Text style={styles_profile.text}>Chargement...</Text>
-      ) : (
-        <View style={styles_profile.list}>
-          {data.map(item => (
-            <View key={item.period} style={styles_profile.row}>
-              <Text style={styles_profile.text}>{item.period}</Text>
-              <Text style={styles_profile.text}>
-                {item.sessions} séance(s)
-              </Text>
-            </View>
-          ))}
-        </View>
+      {!loadingTimeline && data.length > 0 && (
+        <BarChart
+          data={{
+            labels,
+            datasets: [{ data: values }],
+          }}
+          width={screenWidth - 32}
+          height={220}
+          yAxisLabel=""
+          fromZero
+          showValuesOnTopOfBars
+          chartConfig={{
+            backgroundGradientFrom: '#1e1e1e',
+            backgroundGradientTo: '#1e1e1e',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(97, 218, 251, ${opacity})`,
+            labelColor: () => '#fff',
+            style: { borderRadius: 16 },
+          }}
+          style={{
+            marginVertical: 16,
+            borderRadius: 16,
+            alignSelf: 'center',
+          }}
+        />
       )}
 
       {/* Header calendrier */}
