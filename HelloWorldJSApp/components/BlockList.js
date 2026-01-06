@@ -72,7 +72,7 @@ export default function BlocksList({
   
   
     return (
-    <View style={styles.item}>
+    <View>
         <View style={localStyles.imageContainer}>
             <TouchableOpacity onPress={() => onPressImage(item)}>
                 <Image
@@ -225,11 +225,12 @@ const localStyles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative',
+        right: 6
     },
     menuButton: {
       position: 'absolute',
-      top: 6,
-      right: 6,
+      top: 28,
+      right: 18,
       backgroundColor: 'rgba(0,0,0,0.6)',
       borderRadius: 16,
       padding: 6,
@@ -255,5 +256,6 @@ const localStyles = StyleSheet.create({
       color: '#fff',
       fontSize: 14,
     },
+
   });
   

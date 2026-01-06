@@ -141,7 +141,7 @@ export default function BoulderScreen() {
   }
 
 return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}
     style={{ backgroundColor: '#121212' }}>
         <Svg height="500" width="350" style={styles.map}>
@@ -209,7 +209,7 @@ return (
           onClose={closeComments}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

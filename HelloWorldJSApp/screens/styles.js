@@ -352,8 +352,8 @@ logo: {
     marginBottom: 16,
   },
   image: {
-    width: 170,
-    height: 250,
+    width: 165,
+    height: 245,
     borderRadius: 5,
     borderColor: '#808080',
     borderWidth: 5,
