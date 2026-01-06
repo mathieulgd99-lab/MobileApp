@@ -451,12 +451,7 @@ export async function updateDisplayName(token, newName) {
   }
 }
 
-export async function getUserValidatedDifficulties(
-  userId,
-  token,
-  range,
-  month
-) {
+export async function getUserValidatedDifficulties(userId,token,range,month) {
   try {
     const params = new URLSearchParams({ range });
     if (month) params.append('month', month);
@@ -477,5 +472,127 @@ export async function getUserValidatedDifficulties(
     return { error: err.message };
   }
 }
+
+export async function getBoulderVideos(boulderId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/boulders/${boulderId}/videos`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function createBoulderVideo(boulderId, data, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/boulders/${boulderId}/videos`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function deleteVideo(videoId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/videos/${videoId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function getEvents(token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events`,
+      {
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : {},
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function createEvent(data, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function deleteEvent(eventId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events/${eventId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
 
 

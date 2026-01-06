@@ -848,6 +848,215 @@ async function getOrCreateTodaySession(db, userId) {
         }
       }
     );
+
+    app.get('/api/boulders/:boulderId/videos', auth, async (req, res) => {
+      try {
+        const boulderId = Number(req.params.boulderId);
+        if (!boulderId) {
+          return res.status(400).json({ error: 'Invalid boulder id' });
+        }
+    
+        const videos = await db.all(
+          `
+          SELECT video.*, users.display_name AS uploaded_by_name
+          FROM video
+          LEFT JOIN users ON users.id = video.uploaded_by
+          WHERE video.boulder_id = ?
+          ORDER BY video.uploaded_at DESC
+          `,
+          [boulderId]
+        );
+    
+        res.json({ videos });
+      } catch (err) {
+        console.error('Error fetching videos:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.post('/api/boulders/:boulderId/videos', auth, async (req, res) => {
+      try {
+        const boulderId = Number(req.params.boulderId);
+        const userId = req.user.id;
+    
+        if (!boulderId) {
+          return res.status(400).json({ error: 'Invalid boulder id' });
+        }
+    
+        const {
+          source = 'upload',
+          instagram_url,
+          description,
+          original_filename,
+          mime_type,
+          filesize
+        } = req.body;
+    
+        await db.run(
+          `
+          INSERT INTO video (
+            boulder_id,
+            uploaded_by,
+            source,
+            instagram_url,
+            original_filename,
+            mime_type,
+            filesize,
+            description
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            boulderId,
+            userId,
+            source,
+            instagram_url || null,
+            original_filename || null,
+            mime_type || null,
+            filesize || null,
+            description || null
+          ]
+        );
+    
+        res.status(201).json({ success: true });
+      } catch (err) {
+        console.error('Error creating video:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.delete('/api/videos/:videoId', auth, async (req, res) => {
+      try {
+        const videoId = Number(req.params.videoId);
+        const userId = req.user.id;
+    
+        if (!videoId) {
+          return res.status(400).json({ error: 'Invalid video id' });
+        }
+    
+        const video = await db.get(
+          `SELECT * FROM video WHERE id = ?`,
+          [videoId]
+        );
+    
+        if (!video) {
+          return res.status(404).json({ error: 'Video not found' });
+        }
+    
+        if (video.uploaded_by !== userId && req.user.role !== 'admin') {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+    
+        await db.run(`DELETE FROM video WHERE id = ?`, [videoId]);
+    
+        res.json({ success: true });
+      } catch (err) {
+        console.error('Error deleting video:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.get('/api/events', async (req, res) => {
+      try {
+        const events = await db.all(
+          `
+          SELECT event.*, users.display_name AS uploaded_by_name
+          FROM event
+          LEFT JOIN users ON users.id = event.uploaded_by
+          ORDER BY start_date ASC
+          `
+        );
+    
+        res.json({ events });
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.post('/api/events', requireAdmin,auth, async (req, res) => {
+      try {
+        const userId = req.user.id;
+        const {
+          title,
+          description,
+          start_date,
+          end_date,
+          original_filename,
+          mime_type,
+          filesize
+        } = req.body;
+    
+        if (!title || !start_date || !end_date) {
+          return res.status(400).json({ error: 'Missing required fields' });
+        }
+    
+        await db.run(
+          `
+          INSERT INTO event (
+            title,
+            description,
+            uploaded_by,
+            original_filename,
+            mime_type,
+            filesize,
+            start_date,
+            end_date
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            title,
+            description || null,
+            userId,
+            original_filename || null,
+            mime_type || null,
+            filesize || null,
+            start_date,
+            end_date
+          ]
+        );
+    
+        res.status(201).json({ success: true });
+      } catch (err) {
+        console.error('Error creating event:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.delete('/api/events/:eventId', requireAdmin, auth, async (req, res) => {
+      try {
+        const eventId = Number(req.params.eventId);
+        const userId = req.user.id;
+    
+        if (!eventId) {
+          return res.status(400).json({ error: 'Invalid event id' });
+        }
+    
+        const event = await db.get(
+          `SELECT * FROM event WHERE id = ?`,
+          [eventId]
+        );
+    
+        if (!event) {
+          return res.status(404).json({ error: 'Event not found' });
+        }
+    
+        if (event.uploaded_by !== userId && req.user.role !== 'admin') {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+    
+        await db.run(`DELETE FROM event WHERE id = ?`, [eventId]);
+    
+        res.json({ success: true });
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+    
+    
+    
   
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     

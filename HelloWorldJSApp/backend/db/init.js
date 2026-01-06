@@ -176,6 +176,63 @@ async function initDb() {
     );
   `);
 
+/* =======================
+     VIDEOS
+     - Un boulder peut avoir 0..N vidéos
+     - Vidéo soit uploadée (fichier), soit lien Instagram
+     - La contrainte 'source' garantie qu'au moins un des deux est présent
+  ======================= */
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS video (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      boulder_id INTEGER NOT NULL,
+      uploaded_by INTEGER, -- utilisateur qui a ajouté la vidéo
+      source TEXT NOT NULL DEFAULT 'upload', -- 'upload' | 'instagram'
+      original_filename TEXT, -- si upload
+      mime_type TEXT,
+      filesize INTEGER,
+      instagram_url TEXT, -- si source = 'instagram'
+      description TEXT,
+      uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+      FOREIGN KEY (boulder_id) REFERENCES boulder(id) ON DELETE CASCADE,
+      FOREIGN KEY (uploaded_by) REFERENCES users(id),
+
+      -- si source = 'instagram' alors instagram_url doit être non NULL,
+      -- si source = 'upload' alors original_filename doit être non NULL
+      CHECK (
+        (source = 'instagram' AND instagram_url IS NOT NULL)
+        OR
+        (source = 'upload' AND original_filename IS NOT NULL)
+      )
+    );
+  `);
+
+/* =======================
+     EVENTS
+     - image uploadée par l'utilisateur
+     - titre, description, date de début/fin
+  ======================= */
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS event (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      uploaded_by INTEGER, -- utilisateur qui créé l'event / upload l'image
+      original_filename TEXT, -- image
+      mime_type TEXT,
+      filesize INTEGER,
+      start_date DATETIME NOT NULL,
+      end_date DATETIME NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+      FOREIGN KEY (uploaded_by) REFERENCES users(id),
+
+      CHECK (end_date >= start_date)
+    );
+  `);
+
   /* =======================
      INDEXES (PERFORMANCE)
   ======================= */
@@ -191,6 +248,9 @@ async function initDb() {
 
     CREATE INDEX IF NOT EXISTS idx_sessions_user_date
       ON sessions(user_id, started_at);
+    
+    CREATE INDEX IF NOT EXISTS idx_event_start_date
+      ON event(start_date);
   `);
 
       return db;
