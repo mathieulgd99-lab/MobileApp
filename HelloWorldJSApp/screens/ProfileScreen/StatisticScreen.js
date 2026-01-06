@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { BarChart } from 'react-native-chart-kit';
 
 
-import { getUserSessions, getUserSessionsCalendar } from '../../api/auth';
+import { getUserSessions, getUserSessionsCalendar, getUserValidatedDifficulties } from '../../api/auth';
 import styles_profile from './styles_profile.js';
 
 export default function StatisticScreen({ user, token }) {
@@ -14,10 +14,18 @@ export default function StatisticScreen({ user, token }) {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(dayjs().format('YYYY-MM'));
   const [activeDays, setActiveDays] = useState([]);
+
+  const [difficultyStats, setDifficultyStats] = useState([]);
+  const [loadingDifficultyStats, setLoadingDifficultyStats] = useState(true);
+
   const screenWidth = Dimensions.get('window').width;
   useEffect(() => {
     fetchSessions(user,range);
   }, [range]);
+
+  useEffect(() => {
+    fetchDifficultyStats();
+  }, [range, currentMonth]);
 
   async function fetchSessions() {
     setLoadingTimeline(true);
@@ -44,6 +52,23 @@ export default function StatisticScreen({ user, token }) {
     setLoadingCalendar(false);
   }
 
+  async function fetchDifficultyStats() {
+    setLoadingDifficultyStats(true);
+  
+    const res = await getUserValidatedDifficulties(
+      user.id,
+      token,
+      range,
+      currentMonth
+    );
+  
+    if (!res.error) {
+      setDifficultyStats(res.data);
+    }
+  
+    setLoadingDifficultyStats(false);
+  }
+
   const labels = data.map(item =>
     range === 'month'
       ? dayjs(item.period).format('DD')
@@ -58,6 +83,14 @@ export default function StatisticScreen({ user, token }) {
     { length: dayjs(currentMonth).daysInMonth() },
     (_, i) => i + 1
   );
+
+  const difficultyLabels = Array.from({ length: 14 }, (_, i) => String(i + 1));
+
+  const difficultyValues = difficultyLabels.map(level => {
+    const found = difficultyStats.find(d => String(d.grade) === level);
+    return found ? found.count : 0;
+  });
+
 
   return (
     <ScrollView style={styles_profile.container}>
@@ -156,6 +189,37 @@ export default function StatisticScreen({ user, token }) {
           );
         })}
       </View>
+
+      {/* Difficultés validées */}
+      <Text style={styles_profile.title}>📈 Validated difficulties</Text>
+
+      {!loadingDifficultyStats && (
+        <BarChart
+          data={{
+            labels: difficultyLabels,
+            datasets: [{ data: difficultyValues }],
+          }}
+          width={screenWidth - 32}
+          height={240}
+          fromZero
+          segments={4}
+          showValuesOnTopOfBars
+          chartConfig={{
+            backgroundGradientFrom: '#1e1e1e',
+            backgroundGradientTo: '#1e1e1e',
+            decimalPlaces: 0,
+            color: (opacity = 1) => `rgba(255, 193, 7, ${opacity})`,
+            labelColor: () => '#fff',
+          }}
+          style={{
+            marginVertical: 16,
+            borderRadius: 16,
+            alignSelf: 'center',
+          }}
+        />
+      )}
+
+
     </ScrollView>
   );
 }

@@ -801,6 +801,53 @@ async function getOrCreateTodaySession(db, userId) {
         res.status(500).json({ error: 'Internal server error' });
       }
     });
+
+    app.get('/api/users/:userId/stats/difficulties',auth, async (req, res) => {
+        try {
+          const { userId } = req.params;
+          const { range, month } = req.query;
+    
+          let whereClause = 'bv.user_id = ?';
+          const params = [userId];
+    
+          // 🔍 Filtrage temporel
+          if (range === 'month' && month) {
+            whereClause += ` AND strftime('%Y-%m', s.started_at) = ?`;
+            params.push(month);
+          }
+    
+          if (range === 'year') {
+            whereClause += ` AND strftime('%Y', s.started_at) = ?`;
+            params.push(dayjs().format('YYYY'));
+          }
+    
+          // all → pas de filtre date
+    
+          const rows = await db.all(
+            `
+            SELECT
+              b.grade,
+              COUNT(*) AS count
+            FROM boulder_validations bv
+            JOIN boulder b ON b.id = bv.boulder_id
+            LEFT JOIN sessions s ON s.id = bv.session_id
+            WHERE ${whereClause}
+            GROUP BY b.grade
+            ORDER BY b.grade
+            `,
+            params
+          );
+    
+          return res.json({
+            data: rows
+          });
+    
+        } catch (err) {
+          console.error('Difficulty stats error:', err);
+          res.status(500).json({ error: 'Server error' });
+        }
+      }
+    );
   
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     

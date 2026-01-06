@@ -50,7 +50,7 @@ const ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
 return extToMime[ext] || fallback;
 }
 
-export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
+export async function addBoulder(pickedAsset, zoneId, grade, color,token, options = {}) {
 
     try {
         console.log("Entre dans addBoulder auth.js")
@@ -59,6 +59,7 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         const filename = pickedAsset.fileName || uri.split('/').pop();
         const mimeType = guessMimeType(filename);
         const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
+        const { holds = [], skills = [] } = options;
 
         formData.append('boulder', {
         uri: fileUri,
@@ -69,9 +70,18 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         formData.append('zoneId', zoneId);
         formData.append('grade', String(grade));
         formData.append('color', color);
+        holds.forEach(h =>
+          formData.append('holds[]', h)
+        );
+
+        skills.forEach(s =>
+          formData.append('skills[]', s)
+        );
 
         if (formData._parts) {
-          formData._parts.forEach(p => console.log(p[0], p[1]));
+          formData._parts.forEach(p =>
+            console.log('FD:', p[0], p[1])
+          );
         }
 
         const res = await fetch(`${API_BASE}/api/boulders`, {
@@ -438,6 +448,33 @@ export async function updateDisplayName(token, newName) {
   } catch (err) {
     console.error('updateDisplayName error', err);
     return { error: err.message || err };
+  }
+}
+
+export async function getUserValidatedDifficulties(
+  userId,
+  token,
+  range,
+  month
+) {
+  try {
+    const params = new URLSearchParams({ range });
+    if (month) params.append('month', month);
+
+    const res = await fetch(
+      `${API_BASE}/api/users/${userId}/stats/difficulties?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
   }
 }
 
