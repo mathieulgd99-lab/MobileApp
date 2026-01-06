@@ -393,8 +393,8 @@ logo: {
   },
   validationButton: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 28,
+    right: 20,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -454,6 +454,7 @@ logo: {
     paddingHorizontal: 8,
     borderRadius: 20,
   },
+  
   commentBubble: {
     fontSize: 20,
     marginRight: 6,
