@@ -22,6 +22,22 @@ const WALLS = [
   { label: 'Mur Easy', value: 'murEasy' },
 ];
 
+const HOLD_TYPES = [
+  { label: 'Crimp', value: 'crimp' },
+  { label: 'Pinch', value: 'pinch' },
+  { label: 'Sloper', value: 'sloper' },
+  { label: 'None', value: 'none' },
+];
+
+const SKILLS = [
+  { label: 'Physique', value: 'physique' },
+  { label: 'Dynamique', value: 'dynamique' },
+  { label: 'Technique', value: 'technique' },
+  { label: 'Tension', value: 'tension' },
+  { label: 'Équilibre', value: 'equilibre' },
+  { label: 'Lecture', value: 'lecture' },
+];
+
 const DIFFICULTIES = Array.from({ length: 14 }, (_, i) => String(i + 1));
 
 export default function BlocCreatorScreen() {
@@ -36,7 +52,9 @@ export default function BlocCreatorScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState(null);
   const [difficultyOpen, setDifficultyOpen] = useState(false);
 
-
+  const [selectedHolds, setSelectedHolds] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  
   const pickImage = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -66,6 +84,8 @@ export default function BlocCreatorScreen() {
     const newBloc = {
       color: selectedColor,
       difficulty: selectedDifficulty,
+      holds: selectedHolds,
+      skills: selectedSkills,
     };
   
     setImages(prev =>
@@ -78,9 +98,12 @@ export default function BlocCreatorScreen() {
   
     setSelectedColor(null);
     setSelectedDifficulty(null);
+    setSelectedHolds([]);
+    setSelectedSkills([]);
   
     alert("Bloc added to image");
   };
+  
 
   const submitAllBoulders = async () => {
     try {
@@ -91,7 +114,11 @@ export default function BlocCreatorScreen() {
             selectedWall,
             bloc.difficulty,
             bloc.color,
-            token
+            token,
+            {
+              holds: bloc.holds,
+              skills: bloc.skills
+            }
           );
         }
       }
@@ -104,7 +131,16 @@ export default function BlocCreatorScreen() {
       console.error(err);
       alert("Error while uploading boulders");
     }
-  };  
+  };
+
+  const toggleItem = (value, list, setList) => {
+    setList(prev =>
+      prev.includes(value)
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
+  };
+  
   
   return (
     <View style={styles.creator_container}>
@@ -236,6 +272,39 @@ export default function BlocCreatorScreen() {
                 </View>
               )}
             </View>
+
+            <Text style={styles.creator_subtitle}>Hold types</Text>
+            <View style={styles.creator_row}>
+              {HOLD_TYPES.map(h => (
+                <TouchableOpacity
+                  key={h.value}
+                  style={[
+                    styles.creator_tag,
+                    selectedHolds.includes(h.value) && styles.creator_tagSelected
+                  ]}
+                  onPress={() => toggleItem(h.value, selectedHolds, setSelectedHolds)}
+                >
+                  <Text style={styles.creator_tagText}>{h.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.creator_subtitle}>Skills worked</Text>
+            <View style={styles.creator_row}>
+              {SKILLS.map(s => (
+                <TouchableOpacity
+                  key={s.value}
+                  style={[
+                    styles.creator_tag,
+                    selectedSkills.includes(s.value) && styles.creator_tagSelected
+                  ]}
+                  onPress={() => toggleItem(s.value, selectedSkills, setSelectedSkills)}
+                >
+                  <Text style={styles.creator_tagText}>{s.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
 
 
             <TouchableOpacity style={styles.creator_mainButton} onPress={addBloc}>

@@ -215,86 +215,163 @@ async function getOrCreateTodaySession(db, userId) {
 
     app.post('/api/boulders', auth, requireAdmin, upload.single('boulder'), async (req, res) => {
       try {
-        console.log('server.js : POST /api/boulders');
+        console.log('POST /api/boulders');
+    
         const file = req.file;
-        const { zoneId, grade, color } = req.body || {};
+        const {
+          zoneId,
+          grade,
+          color,
+          wallType,
+          holds = [],
+          skills = []
+        } = req.body || {};
     
         if (!file) {
           return res.status(400).json({ error: 'No file uploaded' });
         }
-        if (!zoneId || !grade || !color) {
-          try { fs.unlinkSync(file.path); } catch (e) { console.warn('unable to delete', e); }
-          return res.status(400).json({ error: 'Missing zoneId, grade or color' });
-        }
-
-        const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
     
+        if (!zoneId || !grade || !color || !wallType) {
+          try { fs.unlinkSync(file.path); } catch {}
+          return res.status(400).json({ error: 'Missing required fields' });
+        }
+    
+        const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
         const uploadedBy = req.user?.userId || null;
     
-        const sql = `
-          INSERT INTO boulder (zone_id, grade, color, path, uploaded_by, original_filename, mime_type, filesize)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        const params = [
-          zoneId,
-          parseInt(grade, 10),
-          color,
-          storedPath,
-          uploadedBy,
-          file.originalname,
-          file.mimetype,
-          file.size,
-        ];
+        await db.exec('BEGIN TRANSACTION');
     
-        const result = await db.run(sql, params);
-        const insertedId = result.lastID;
+        /* ---------- BOULDER ---------- */
+        const result = await db.run(
+          `
+          INSERT INTO boulder (
+            zone_id, grade, color, path, uploaded_by,
+            wall_type, original_filename, mime_type, filesize
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            zoneId,
+            parseInt(grade, 10),
+            color,
+            storedPath,
+            uploadedBy,
+            wallType,
+            file.originalname,
+            file.mimetype,
+            file.size
+          ]
+        );
     
-        return res.status(201).json({
+        const boulderId = result.lastID;
+    
+        /* ---------- HOLDS ---------- */
+        for (const holdName of [].concat(holds)) {
+          const hold = await db.get(
+            `SELECT id FROM hold_type WHERE name = ?`,
+            [holdName]
+          );
+    
+          if (hold) {
+            await db.run(
+              `INSERT INTO boulder_hold_type (boulder_id, hold_type_id)
+               VALUES (?, ?)`,
+              [boulderId, hold.id]
+            );
+          }
+        }
+
+        /* ---------- SKILLS ---------- */
+        for (const skillName of [].concat(skills)) {
+          const skill = await db.get(
+            `SELECT id FROM skill WHERE name = ?`,
+            [skillName]
+          );
+    
+          if (skill) {
+            await db.run(
+              `INSERT INTO boulder_skill (boulder_id, skill_id)
+               VALUES (?, ?)`,
+              [boulderId, skill.id]
+            );
+          }
+        }
+    
+        await db.exec('COMMIT');
+    
+        res.status(201).json({
           success: true,
-          id: insertedId,
-          path: storedPath,
-          original_filename: file.originalname,
+          id: boulderId,
+          path: storedPath
         });
+    
       } catch (err) {
-        console.error('Error in POST /api/images', err);
-        return res.status(500).json({ error: 'Server error' });
+        await db.exec('ROLLBACK');
+        console.error('Error creating boulder:', err);
+        res.status(500).json({ error: 'Server error' });
       }
     });
+    
 
     app.get('/api/boulders', async (req, res) => {
-      console.log("GET /api/boulders (public + optional user)");
-    
       try {
-
         const boulders = await db.all(`
-          SELECT *
-          FROM boulder`);
-        res.json({ boulders });
-        
+          SELECT
+            b.*,
+            GROUP_CONCAT(DISTINCT ht.name) AS holds,
+            GROUP_CONCAT(DISTINCT s.name) AS skills
+          FROM boulder b
+          LEFT JOIN boulder_hold_type bht ON b.id = bht.boulder_id
+          LEFT JOIN hold_type ht ON ht.id = bht.hold_type_id
+          LEFT JOIN boulder_skill bs ON b.id = bs.boulder_id
+          LEFT JOIN skill s ON s.id = bs.skill_id
+          GROUP BY b.id
+          ORDER BY b.added_at DESC
+        `);
+    
+        res.json({
+          boulders: boulders.map(b => ({
+            ...b,
+            holds: b.holds ? b.holds.split(',') : [],
+            skills: b.skills ? b.skills.split(',') : []
+          }))
+        });
+    
       } catch (err) {
         console.error("Error fetching boulders:", err);
         res.status(500).json({ error: "Internal server error" });
       }
     });
     
+    
 
     app.get('/api/boulders/validated', auth, async (req, res) => {
-      console.log("GET /api/boulders/validated");
-    
       try {
         const userId = req.user.id;
-        if (!userId) {
-          return res.json({ boulders: [] });
-        } else {
-          const boulders = await db.all(`
-            SELECT boulder.*
-            FROM boulder
-            JOIN boulder_validations iv ON iv.boulder_id = boulder.id
-            WHERE iv.user_id = ?
-          `, [userId]);
-      
-          res.json({ boulders });
-        }
+    
+        const boulders = await db.all(`
+          SELECT
+            b.*,
+            GROUP_CONCAT(DISTINCT ht.name) AS holds,
+            GROUP_CONCAT(DISTINCT s.name) AS skills
+          FROM boulder b
+          JOIN boulder_validations bv ON bv.boulder_id = b.id
+          LEFT JOIN boulder_hold_type bht ON b.id = bht.boulder_id
+          LEFT JOIN hold_type ht ON ht.id = bht.hold_type_id
+          LEFT JOIN boulder_skill bs ON b.id = bs.boulder_id
+          LEFT JOIN skill s ON s.id = bs.skill_id
+          WHERE bv.user_id = ?
+          GROUP BY b.id
+        `, [userId]);
+    
+        res.json({
+          boulders: boulders.map(b => ({
+            ...b,
+            holds: b.holds ? b.holds.split(',') : [],
+            skills: b.skills ? b.skills.split(',') : []
+          }))
+        });
+    
       } catch (err) {
         console.error("Error fetching validated boulders:", err);
         res.status(500).json({ error: "Internal server error" });

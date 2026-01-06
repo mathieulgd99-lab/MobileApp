@@ -30,6 +30,8 @@ async function initDb() {
       color TEXT NOT NULL,
       path TEXT NOT NULL,
       uploaded_by INTEGER,
+      wall_type TEXT NOT NULL, -- devers | dalle | vertical
+
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       archived_at DATETIME DEFAULT NULL,
       is_current INTEGER NOT NULL DEFAULT 1,
@@ -42,6 +44,67 @@ async function initDb() {
       current_point REAL NOT NULL DEFAULT 0,
 
       FOREIGN KEY (uploaded_by) REFERENCES users(id)
+    );
+  `);
+
+
+    /* =======================
+     HOLD TYPES (CRIMP, PINCH, ...)
+  ======================= */
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS hold_type (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    );
+  `);
+
+  /* =======================
+     SKILLS (PHYSIQUE, TECHNIQUE, ...)
+  ======================= */
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS skill (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    );
+  `);
+
+  /* =======================
+     BOULDER ↔ HOLD TYPE
+  ======================= */
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS boulder_hold_type (
+      boulder_id INTEGER NOT NULL,
+      hold_type_id INTEGER NOT NULL,
+
+      PRIMARY KEY (boulder_id, hold_type_id),
+
+      FOREIGN KEY (boulder_id)
+        REFERENCES boulder(id)
+        ON DELETE CASCADE,
+
+      FOREIGN KEY (hold_type_id)
+        REFERENCES hold_type(id)
+        ON DELETE CASCADE
+    );
+  `);
+
+  /* =======================
+     BOULDER ↔ SKILL
+  ======================= */
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS boulder_skill (
+      boulder_id INTEGER NOT NULL,
+      skill_id INTEGER NOT NULL,
+
+      PRIMARY KEY (boulder_id, skill_id),
+
+      FOREIGN KEY (boulder_id)
+        REFERENCES boulder(id)
+        ON DELETE CASCADE,
+
+      FOREIGN KEY (skill_id)
+        REFERENCES skill(id)
+        ON DELETE CASCADE
     );
   `);
 

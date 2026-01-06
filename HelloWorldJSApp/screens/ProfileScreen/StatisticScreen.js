@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Dimensions} from 'react-native';
+import { View, ScrollView, Text, TouchableOpacity, Dimensions} from 'react-native';
 import dayjs from 'dayjs';
 import { BarChart } from 'react-native-chart-kit';
 
@@ -60,7 +60,7 @@ export default function StatisticScreen({ user, token }) {
   );
 
   return (
-    <View style={styles_profile.container}>
+    <ScrollView style={styles_profile.container}>
       <Text style={styles_profile.title}>📊 Sessions</Text>
 
       {/* Filtres */}
@@ -92,6 +92,7 @@ export default function StatisticScreen({ user, token }) {
           height={220}
           yAxisLabel=""
           fromZero
+          
           showValuesOnTopOfBars
           chartConfig={{
             backgroundGradientFrom: '#1e1e1e',
@@ -155,6 +156,6 @@ export default function StatisticScreen({ user, token }) {
           );
         })}
       </View>
-    </View>
+    </ScrollView>
   );
 }

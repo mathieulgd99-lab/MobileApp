@@ -746,6 +746,24 @@ dropdownItemText: {
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
+  },
+  creator_tag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#aaa',
+    margin: 4,
+  },
+  
+  creator_tagSelected: {
+    backgroundColor: '#61dafb',
+    borderColor: '#61dafb',
+  },
+  
+  creator_tagText: {
+    color: 'white',
+    fontSize: 12,
   }
 
 
