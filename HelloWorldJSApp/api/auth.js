@@ -50,7 +50,7 @@ const ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
 return extToMime[ext] || fallback;
 }
 
-export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
+export async function addBoulder(pickedAsset, zoneId, grade, color,token, options = {}) {
 
     try {
         console.log("Entre dans addBoulder auth.js")
@@ -59,6 +59,7 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         const filename = pickedAsset.fileName || uri.split('/').pop();
         const mimeType = guessMimeType(filename);
         const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
+        const { holds = [], skills = [] } = options;
 
         formData.append('boulder', {
         uri: fileUri,
@@ -69,9 +70,18 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token) {
         formData.append('zoneId', zoneId);
         formData.append('grade', String(grade));
         formData.append('color', color);
+        holds.forEach(h =>
+          formData.append('holds[]', h)
+        );
+
+        skills.forEach(s =>
+          formData.append('skills[]', s)
+        );
 
         if (formData._parts) {
-          formData._parts.forEach(p => console.log(p[0], p[1]));
+          formData._parts.forEach(p =>
+            console.log('FD:', p[0], p[1])
+          );
         }
 
         const res = await fetch(`${API_BASE}/api/boulders`, {
@@ -440,5 +450,147 @@ export async function updateDisplayName(token, newName) {
     return { error: err.message || err };
   }
 }
+
+export async function getUserValidatedDifficulties(userId,token,range,month) {
+  try {
+    const params = new URLSearchParams({ range });
+    if (month) params.append('month', month);
+
+    const res = await fetch(
+      `${API_BASE}/api/users/${userId}/stats/difficulties?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function getBoulderVideos(boulderId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/boulders/${boulderId}/videos`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function createBoulderVideo(boulderId, data, token) {
+  const isFormData = data instanceof FormData;
+
+  const res = await fetch(
+    `${API_BASE}/api/boulders/${boulderId}/videos`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: isFormData ? data : JSON.stringify(data),
+    }
+  );
+
+  const json = await res.json();
+  if (!res.ok) return { error: json };
+  return json;
+}
+
+export async function deleteVideo(videoId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/videos/${videoId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function getEvents(token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events`,
+      {
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : {},
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function createEvent(data, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+export async function deleteEvent(eventId, token) {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/events/${eventId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const json = await res.json();
+    if (!res.ok) return { error: json };
+    return json;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
 
 

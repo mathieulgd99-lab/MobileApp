@@ -1,26 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { ScrollView,
         Text,
-        Modal,
-        Image,
         FlatList,
         View,
         ActivityIndicator,
         TouchableOpacity,
         StyleSheet,
-        SafeAreaView,
-        KeyboardAvoidingView,
-        Platform,
-        TextInput
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders, getValidatedBoulders } from '../../api/auth';
+import { getBoulders, getValidatedBoulders, createBoulderVideo,getBoulderVideos,deleteVideo } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 
 import useBoulders from '../Hooks/useBoulder';
 import BlocksList from '../../components/BlockList';
 import useComment from '../Hooks/useComment';
+import useBoulderModal from '../Hooks/useBoulderModal';
+import BoulderModal from '../../components/BoulderModal';
+import CommentsModal from '../../components/CommentsModal';
+import UploadVideoModal from '../../components/UploadVideoModal';
+import PlayVideoModal from '../../components/PlayVideoModal';
+
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
@@ -44,9 +44,18 @@ export default function BoulderScreen() {
 
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showImage, setShowImage] = useState(false)
+
   const [newComment, setNewComment] = useState('');
+
+  const [uploadVideoVisible, setUploadVideoVisible] = useState(false);
+  const [activeBoulder, setActiveBoulder] = useState(null);
+
+  const modal = useBoulderModal();
+
+  const [showVideos, setShowVideos] = useState(false);
+  const [videos, setVideos] = useState([]);
+
+
 
   const {
     loading,
@@ -58,7 +67,8 @@ export default function BoulderScreen() {
     toggleValidation,
     getFiltered,
     deleteBoulder,
-    archiveBoulder
+    archiveBoulder,
+    isValidated
   } = useBoulders(token);
 
   const {
@@ -113,11 +123,6 @@ export default function BoulderScreen() {
     archived: false,
   });
 
-  function handleCloseModal() {
-    setShowImage(false);
-    setSelectedImage(null);
-  }
-
   const handleClickGrade = (gradeDifficulty) => {
     setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
   }
@@ -126,10 +131,54 @@ export default function BoulderScreen() {
     setSelectedZone(prev => prev === zoneId ? null : zoneId);
   };
 
-  const handleClickImage = (image) => {
-    setSelectedImage(image);
-    setShowImage(true);
-  };
+  function handleUploadVideo(boulder) {
+    setActiveBoulder(boulder);
+    setUploadVideoVisible(true);
+  }
+  
+  function handleCloseUploadVideo() {
+    setUploadVideoVisible(false);
+    setActiveBoulder(null);
+  }
+
+  async function openVideos(boulderId) {
+    try {
+      setShowVideos(true);
+      setVideos([]);
+  
+      const res = await getBoulderVideos(boulderId, token);
+      console.log("res : ",res)
+      if (!res.error) {
+        setVideos(res.videos || []);
+      } else {
+        console.log('Erreur getBoulderVideos:', res.error);
+      }
+    } catch (err) {
+      console.error('Erreur openVideos:', err);
+    }
+  }
+
+  async function handleRemoveVideo(video) {
+    await deleteVideo(video.id, token);
+    setVideos(videos.filter(v => v.id !== video.id));
+  }
+  
+
+ 
+  async function handleSubmitVideo(data) {
+    if (!activeBoulder) return;
+    console.log("Boulderscreen await createbouldervideo")
+    const res = await createBoulderVideo(
+      activeBoulder.id,
+      data,
+      token
+    );
+    console.log("Boulderscreen finish createbouldervideo")
+    if (!res.error) {
+      setUploadVideoVisible(false);
+    }
+  }
+  
   
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
@@ -150,7 +199,7 @@ export default function BoulderScreen() {
   }
 
 return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}
     style={{ backgroundColor: '#121212' }}>
         <Svg height="500" width="350" style={styles.map}>
@@ -182,7 +231,7 @@ return (
         <BlocksList
           boulders={filteredBoulders}
           validatedBoulders={validatedBoulders}
-          onPressImage={handleClickImage}
+          onPressImage={modal.open}
           onOpenComments={openComments}
           onToggleValidation={toggleValidation}
           getCommentCount={getCommentCount}
@@ -191,109 +240,51 @@ return (
           onArchiveBoulder={archiveBoulder}
           userRole={user.role}
         />
-        {/* Image full-screen modal */}
-        {showImage && selectedImage && (
-          <Modal visible={showImage} onRequestClose={handleCloseModal} animationType="fade">
-            <View style={{ flex: 1, backgroundColor: '#000' }}>
-              <View style={styles.header}>
-                <Text style={styles.header_grade}>{selectedImage.grade}</Text>
-              </View>
 
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Image source={{ uri: `${API_BASE}/${selectedImage.path}` }} style={styles.image_zoomed} />
-                {/* Bouton commentaires en bas gauche de l'image */}
-                <TouchableOpacity
-                    activeOpacity={0.9}
-                    onPress={() => openComments(selectedImage.id)}
-                    style={styles.commentButton}
-                  >
-                  <Text style={styles.commentBubble}>💬</Text>
-                  <View style={styles.commentCountBox}>
-                    <Text style={styles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                onPress={() => toggleValidation(selectedImage)}
-                style={[
-                  styles.validationButton,
-                  { backgroundColor: validatedBoulders.some(b => b.id === selectedImage.id) ? '#4CAF50' : '#BDBDBD'}
-                ]}
-                >
-                <Text style={styles.validationIcon}>✓</Text>
-                </TouchableOpacity>
-              </View>
+        <BoulderModal
+          visible={modal.visible}
+          boulder={modal.boulder}
+          onClose={modal.close}
+          imageBase={API_BASE}
+          isValidated={isValidated(modal.boulder?.id)}
+          onToggleValidation={toggleValidation}
+          onOpenComments={openComments}
+          commentCount={getCommentCount(modal.boulder?.id)}
+          onUploadVideo={handleUploadVideo}
+          onOpenVideos={(boulder) => openVideos(boulder.id)}
+          isHistory={false}
+        />
 
-              <View style={[styles.footer, { backgroundColor: selectedImage?.color || '#000' }]}>
-                <Text style={styles.footerText}>Ouvert depuis :</Text>
-                <Text style={styles.footerText}>Points :</Text>
-                <Text style={styles.footerText}>Tops :</Text>
+        <CommentsModal
+          visible={commentsModal}
+          comments={comments}
+          user={user}
+          newComment={newComment}
+          setNewComment={setNewComment}
+          postingComment={postingComment}
+          onAddComment={async () => {
+            await addNewComment(newComment);
+            setNewComment('');
+          }}
+          onRemoveComment={removeComment}
+          onClose={closeComments}
+        />
 
-                <TouchableOpacity onPress={handleCloseModal} style={[styles.footerButton]}>
-                  <Text style={[styles.footerButtonText]}>Fermer</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        )}
+        <UploadVideoModal
+          visible={uploadVideoVisible}
+          onClose={handleCloseUploadVideo}
+          onSubmit={handleSubmitVideo}
+        />
 
-        {/* Comments Modal */}
-        <Modal visible={commentsModal} animationType="slide" onRequestClose={closeComments}>
-          <SafeAreaView style={{ flex: 1 }}>
-            <View style={{ flex: 1, padding: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Commentaires</Text>
-                <TouchableOpacity onPress={() => closeComments()}>
-                  <Text style={{ color: '#007AFF' }}>Fermer</Text>
-                </TouchableOpacity>
-              </View>
+        <PlayVideoModal
+          visible={showVideos}
+          onClose={() => setShowVideos(false)}
+          videos={videos}
+          onRemove={handleRemoveVideo}
+        />
 
-              <View style={{ flex: 1 }}>
-                <FlatList
-                  data={comments}
-                  keyExtractor={(c) => String(c.id)}
-                  renderItem={({ item }) => (
-                    <View style={styles.commentRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: '600' }}>{item.user_name}</Text>
-                        <Text style={{ marginTop: 4 }}>{item.content}</Text>
-                        <Text style={{ marginTop: 6, fontSize: 12, color: '#666' }}>{item.created_at}</Text>
-                      </View>
-                      { (user?.display_name === item.user_name || user?.role === 'admin') && (
-                        <TouchableOpacity onPress={() => removeComment(item.id)} style={localStyles.deleteButton}>
-                          <Text style={localStyles.deleteButtonText}>Supprimer</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                  ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 12 }}>Aucun commentaire</Text>}
-                />
-              </View>
-
-              <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-                  <TextInput
-                    value={newComment}
-                    onChangeText={setNewComment}
-                    placeholder="Write a new comment..."
-                    style={localStyles.input}
-                    multiline
-                  />
-                  <TouchableOpacity
-                    onPress={async () => {
-                      await addNewComment(newComment);
-                      setNewComment('');
-                    }}
-                    style={localStyles.sendButton}
-                    disabled={postingComment}>
-                    <Text style={{ color: '#fff' }}>{postingComment ? '...' : 'Send'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </KeyboardAvoidingView>
-            </View>
-          </SafeAreaView>
-        </Modal>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

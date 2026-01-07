@@ -5,16 +5,18 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
-  Modal,
-  SafeAreaView,
   ScrollView
 } from 'react-native';
 import styles from '../styles';
 import { AuthContext } from '../../context/AuthContext';
 import useBoulders from '../Hooks/useBoulder';
-import BlocksList from '../../components/BlockList';
 import useComment from '../Hooks/useComment';
+import useBoulderModal from '../Hooks/useBoulderModal';
+
+import BlocksList from '../../components/BlockList';
+import BoulderModal from '../../components/BoulderModal';
+import CommentsModal from '../../components/CommentsModal';
+
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
 
 
@@ -24,9 +26,9 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
 
   const [showAll, setShowAll] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showImage, setShowImage] = useState(false);
 
+
+  const imageModal = useBoulderModal();
 
   const {
     loading,
@@ -35,7 +37,8 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
     grades,
     deleteBoulder,
     archiveBoulder,
-    countGrade
+    countGrade,
+    isValidated
   } = useBoulders(authToken, profileUser?.id);
 
 
@@ -64,11 +67,6 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
   
 
   const archivedFilter = () => setShowAll(prev => !prev);
-
-  function handleCloseModal() {
-    setShowImage(false);
-    setSelectedImage(null);
-  }
 
   const handleClickGrade = (gradeDifficulty) => {
     setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
@@ -117,10 +115,7 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
     <BlocksList
           boulders={filteredBoulders}
           validatedBoulders={validatedBoulders}
-          onPressImage={(img) => {
-            setSelectedImage(img);
-            setShowImage(true);
-          }}
+          onPressImage={(boulder) => imageModal.open(boulder)}
           onOpenComments={openComments}
           getCommentCount={getCommentCount}
           onToggleValidation={() => {}}
@@ -129,82 +124,29 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
           onArchiveBoulder={archiveBoulder}
           userRole={user.role}
         />
+    {/* -------- IMAGE MODAL -------- */}
+    <BoulderModal
+        visible={imageModal.visible}
+        boulder={imageModal.boulder}
+        onClose={imageModal.close}
+        imageBase={API_BASE}
+        isValidated={isValidated(imageModal.boulder?.id)}
+        onToggleValidation={() => {}}
+        onOpenComments={openComments}
+        commentCount={getCommentCount(imageModal.boulder?.id)}
+        canValidate={false}
+        isHistory={true}
+      />
 
-    {/* Image full-screen modal */}
-    {showImage && selectedImage && (
-      <Modal visible={showImage} onRequestClose={handleCloseModal} animationType="fade">
-        <View style={{ flex: 1, backgroundColor: '#000' }}>
-          <View style={styles.header}>
-            <Text style={styles.header_grade}>{selectedImage.grade}</Text>
-          </View>
-
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Image source={{ uri: `${API_BASE}/${selectedImage.path}` }} style={styles.image_zoomed} />
-            {/* Bouton commentaires en bas gauche de l'image */}
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => openComments(selectedImage.id)}
-                style={styles.commentButton}
-              >
-              <Text style={styles.commentBubble}>💬</Text>
-              <View style={styles.commentCountBox}>
-                <Text style={styles.commentCountText}>{getCommentCount(selectedImage.id)}</Text>
-              </View>
-            </TouchableOpacity>
-            <View style={[
-              localStyles.validationButton,
-            ]}>
-            <Text style={localStyles.validationIcon}>✓</Text>
-            </View>
-          </View>
-
-          <View style={[styles.footer, { backgroundColor: selectedImage?.color || '#000' }]}>
-            <Text style={styles.footerText}>Ouvert depuis :</Text>
-            <Text style={styles.footerText}>Points :</Text>
-            <Text style={styles.footerText}>Tops :</Text>
-
-            <TouchableOpacity onPress={handleCloseModal} style={[styles.footerButton]}>
-              <Text style={[styles.footerButtonText]}>Fermer</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    )}
-    {/* Comments Modal */}
-    <Modal visible={commentsModal} animationType="slide" onRequestClose={closeComments}>
-          <SafeAreaView style={{ flex: 1 }}>
-            <View style={{ flex: 1, padding: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Commentaires</Text>
-                <TouchableOpacity onPress={() => closeComments()}>
-                  <Text style={{ color: '#007AFF' }}>Fermer</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <FlatList
-                  data={comments}
-                  keyExtractor={(c) => String(c.id)}
-                  renderItem={({ item }) => (
-                    <View style={styles.commentRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: '600' }}>{item.user_name}</Text>
-                        <Text style={{ marginTop: 4 }}>{item.content}</Text>
-                        <Text style={{ marginTop: 6, fontSize: 12, color: '#666' }}>{item.created_at}</Text>
-                      </View>
-                      { (user?.display_name === item.user_name || user?.role === 'admin') && (
-                        <TouchableOpacity onPress={() => removeComment(item.id)} style={localStyles.deleteButton}>
-                          <Text style={localStyles.deleteButtonText}>Supprimer</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                  ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 12 }}>Aucun commentaire</Text>}
-                />
-              </View>
-            </View>
-          </SafeAreaView>
-        </Modal>
+      {/* -------- COMMENTS MODAL -------- */}
+      <CommentsModal
+        visible={commentsModal}
+        comments={comments}
+        user={user}
+        onRemoveComment={removeComment}
+        onClose={closeComments}
+        canPost={false} 
+      />
       </ScrollView>
     </View>
   )
