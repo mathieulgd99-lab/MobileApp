@@ -866,32 +866,53 @@ async function getOrCreateTodaySession(db, userId) {
           `,
           [boulderId]
         );
-    
-        res.json({ videos });
+        const formattedVideos = videos.map(v => ({
+          id: v.id,
+          source: v.source,
+          uploaded_by_name: v.uploaded_by_name,
+          description: v.description,
+        
+          video_url:
+          v.source === 'upload' && v.server_filename
+            ? `${req.protocol}://${req.get('host')}/uploads/${v.server_filename}`
+            : null,
+        
+          instagram_url:
+            v.source === 'instagram'
+              ? v.instagram_url
+              : null,
+        }));
+        res.json({ videos:formattedVideos });
       } catch (err) {
         console.error('Error fetching videos:', err);
         res.status(500).json({ error: 'Internal server error' });
       }
     });
 
-    app.post('/api/boulders/:boulderId/videos', auth, async (req, res) => {
+    app.post('/api/boulders/:boulderId/videos',auth,upload.single('video'),async (req, res) => {
       try {
         const boulderId = Number(req.params.boulderId);
         const userId = req.user.id;
-    
+  
         if (!boulderId) {
           return res.status(400).json({ error: 'Invalid boulder id' });
         }
-    
-        const {
-          source = 'upload',
-          instagram_url,
-          description,
-          original_filename,
-          mime_type,
-          filesize
-        } = req.body;
-    
+  
+        const { source = 'upload', instagram_url, description } = req.body || {};
+        const file = req.file;
+  
+        console.log('req.body :', req.body);
+        console.log('req.file :', req.file);
+  
+        if (source === 'upload' && !file) {
+          return res.status(400).json({ error: 'No file uploaded for source=upload' });
+        }
+        if (source === 'instagram' && !instagram_url) {
+          return res.status(400).json({ error: 'instagram_url required for source=instagram' });
+        }
+  
+        const storedPath = file ? path.relative(__dirname, file.path).replace(/\\/g, '/') : null;
+        console.log("stored_path:",storedPath)
         await db.run(
           `
           INSERT INTO video (
@@ -900,61 +921,69 @@ async function getOrCreateTodaySession(db, userId) {
             source,
             instagram_url,
             original_filename,
+            server_filename,
             mime_type,
             filesize,
             description
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?,?, ?, ?, ?, ?)
           `,
           [
             boulderId,
             userId,
             source,
             instagram_url || null,
-            original_filename || null,
-            mime_type || null,
-            filesize || null,
+            file?.originalname || null,
+            file?.filename || null,
+            file?.mimetype || null,
+            file?.size || null,
             description || null
           ]
         );
-    
+        
         res.status(201).json({ success: true });
       } catch (err) {
         console.error('Error creating video:', err);
         res.status(500).json({ error: 'Internal server error' });
       }
-    });
-
-    app.delete('/api/videos/:videoId', auth, async (req, res) => {
-      try {
-        const videoId = Number(req.params.videoId);
-        const userId = req.user.id;
-    
-        if (!videoId) {
-          return res.status(400).json({ error: 'Invalid video id' });
-        }
-    
-        const video = await db.get(
-          `SELECT * FROM video WHERE id = ?`,
-          [videoId]
-        );
-    
-        if (!video) {
-          return res.status(404).json({ error: 'Video not found' });
-        }
-    
-        if (video.uploaded_by !== userId && req.user.role !== 'admin') {
-          return res.status(403).json({ error: 'Forbidden' });
-        }
-    
-        await db.run(`DELETE FROM video WHERE id = ?`, [videoId]);
-    
-        res.json({ success: true });
-      } catch (err) {
-        console.error('Error deleting video:', err);
-        res.status(500).json({ error: 'Internal server error' });
+    }
+  );
+  app.delete('/api/videos/:videoId', auth, async (req, res) => {
+    try {
+      const videoId = Number(req.params.videoId);
+      const userId = req.user.id;
+  
+      if (!videoId) {
+        return res.status(400).json({ error: 'Invalid video id' });
       }
-    });
+  
+      const video = await db.get(
+        `SELECT * FROM video WHERE id = ?`,
+        [videoId]
+      );
+  
+      if (!video) {
+        return res.status(404).json({ error: 'Video not found' });
+      }
+  
+      if (video.uploaded_by !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+  
+      if (video.source === 'upload' && video.server_filename) {
+        const filePath = path.join(__dirname, 'uploads', video.server_filename);
+        fs.unlinkSync(filePath);
+      }
+  
+      await db.run(`DELETE FROM video WHERE id = ?`, [videoId]);
+  
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Error deleting video:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
     app.get('/api/events', async (req, res) => {
       try {

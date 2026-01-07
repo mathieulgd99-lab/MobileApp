@@ -6,11 +6,10 @@ import { ScrollView,
         ActivityIndicator,
         TouchableOpacity,
         StyleSheet,
-        SafeAreaView,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders, getValidatedBoulders } from '../../api/auth';
+import { getBoulders, getValidatedBoulders, createBoulderVideo,getBoulderVideos } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 
 import useBoulders from '../Hooks/useBoulder';
@@ -19,6 +18,8 @@ import useComment from '../Hooks/useComment';
 import useBoulderModal from '../Hooks/useBoulderModal';
 import BoulderModal from '../../components/BoulderModal';
 import CommentsModal from '../../components/CommentsModal';
+import UploadVideoModal from '../../components/UploadVideoModal';
+import PlayVideoModal from '../../components/PlayVideoModal';
 
 
 const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
@@ -46,7 +47,15 @@ export default function BoulderScreen() {
 
   const [newComment, setNewComment] = useState('');
 
+  const [uploadVideoVisible, setUploadVideoVisible] = useState(false);
+  const [activeBoulder, setActiveBoulder] = useState(null);
+
   const modal = useBoulderModal();
+
+  const [showVideos, setShowVideos] = useState(false);
+  const [videos, setVideos] = useState([]);
+
+
 
   const {
     loading,
@@ -121,6 +130,50 @@ export default function BoulderScreen() {
   const handleClickZone = (zoneId) => {
     setSelectedZone(prev => prev === zoneId ? null : zoneId);
   };
+
+  function handleUploadVideo(boulder) {
+    setActiveBoulder(boulder);
+    setUploadVideoVisible(true);
+  }
+  
+  function handleCloseUploadVideo() {
+    setUploadVideoVisible(false);
+    setActiveBoulder(null);
+  }
+
+  async function openVideos(boulderId) {
+    try {
+      setShowVideos(true);
+      setVideos([]);
+  
+      const res = await getBoulderVideos(boulderId, token);
+      console.log("res : ",res)
+      if (!res.error) {
+        setVideos(res.videos || []);
+      } else {
+        console.log('Erreur getBoulderVideos:', res.error);
+      }
+    } catch (err) {
+      console.error('Erreur openVideos:', err);
+    }
+  }
+  
+
+ 
+  async function handleSubmitVideo(data) {
+    if (!activeBoulder) return;
+    console.log("Boulderscreen await createbouldervideo")
+    const res = await createBoulderVideo(
+      activeBoulder.id,
+      data,
+      token
+    );
+    console.log("Boulderscreen finish createbouldervideo")
+    if (!res.error) {
+      setUploadVideoVisible(false);
+    }
+  }
+  
   
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
@@ -192,6 +245,9 @@ return (
           onToggleValidation={toggleValidation}
           onOpenComments={openComments}
           commentCount={getCommentCount(modal.boulder?.id)}
+          onUploadVideo={handleUploadVideo}
+          onOpenVideos={(boulder) => openVideos(boulder.id)}
+          isHistory={false}
         />
 
         <CommentsModal
@@ -208,6 +264,19 @@ return (
           onRemoveComment={removeComment}
           onClose={closeComments}
         />
+
+        <UploadVideoModal
+          visible={uploadVideoVisible}
+          onClose={handleCloseUploadVideo}
+          onSubmit={handleSubmitVideo}
+        />
+
+        <PlayVideoModal
+          visible={showVideos}
+          onClose={() => setShowVideos(false)}
+          videos={videos}
+        />
+
       </ScrollView>
     </View>
   );

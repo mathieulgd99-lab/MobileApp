@@ -1,7 +1,8 @@
-// components/BoulderModal.js
 import React from 'react';
 import { Modal, View, Image, Text, TouchableOpacity } from 'react-native';
 import styles from '../screens/styles';
+import { Ionicons } from '@expo/vector-icons';
+import { AuthContext } from '../context/AuthContext';
 
 export default function BoulderModal({
   visible,
@@ -13,7 +14,11 @@ export default function BoulderModal({
   onOpenComments,
   commentCount,
   canValidate = true,
+  onUploadVideo,
+  onOpenVideos,
+  isHistory,
 }) {
+
   if (!boulder) return null;
 
   return (
@@ -39,16 +44,38 @@ export default function BoulderModal({
             </View>
           </TouchableOpacity>
 
-          {canValidate && (<TouchableOpacity
+        {/* -------- ACTION BUTTONS (RIGHT SIDE) -------- */}
+        <View style={localStyles.actionColumn}>
+        
+        {/* Upload video */}
+        {!isHistory && <TouchableOpacity
+            style={localStyles.roundButton}
+            onPress={() => onUploadVideo?.(boulder)}
+        >
+            <Ionicons name="videocam-outline" size={22} color="#fff" />
+        </TouchableOpacity>}
+
+        {/* View videos */}
+        <TouchableOpacity
+            style={localStyles.roundButton}
+            onPress={() => onOpenVideos?.(boulder)}
+        >
+            <Ionicons name="play-outline" size={22} color="#fff" />
+        </TouchableOpacity>
+
+        {/* Validate */}
+        {canValidate && (
+            <TouchableOpacity
             onPress={() => onToggleValidation(boulder)}
             style={[
-              styles.validationButton,
-              { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' },
+                localStyles.roundButton,
+                { backgroundColor: isValidated ? '#4CAF50' : '#BDBDBD' },
             ]}
-          >
+            >
             <Text style={styles.validationIcon}>✓</Text>
-          </TouchableOpacity>
-          )}
+            </TouchableOpacity>
+        )}
+        </View>
         </View>
 
         <View style={[styles.footer, { backgroundColor: boulder.color || '#000' }]}>
@@ -61,4 +88,21 @@ export default function BoulderModal({
   );
 }
 
-
+const localStyles = {
+    actionColumn: {
+      position: 'absolute',
+      right: 20,
+      bottom: 28,
+      alignItems: 'center',
+    },
+    roundButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+  };
+  

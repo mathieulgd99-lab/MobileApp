@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Modal,
-  SafeAreaView,
   View,
   Text,
   FlatList,
@@ -26,7 +25,7 @@ export default function CommentsModal({
 }) {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <View style={{ flex: 1, padding: 12 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Commentaires</Text>
@@ -97,7 +96,7 @@ export default function CommentsModal({
           </KeyboardAvoidingView>)
         }
         </View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }

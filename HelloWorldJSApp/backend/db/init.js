@@ -48,7 +48,7 @@ async function initDb() {
   `);
 
 
-    /* =======================
+  /* =======================
      HOLD TYPES (CRIMP, PINCH, ...)
   ======================= */
   await db.exec(`
@@ -187,20 +187,19 @@ async function initDb() {
     CREATE TABLE IF NOT EXISTS video (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       boulder_id INTEGER NOT NULL,
-      uploaded_by INTEGER, -- utilisateur qui a ajouté la vidéo
-      source TEXT NOT NULL DEFAULT 'upload', -- 'upload' | 'instagram'
-      original_filename TEXT, -- si upload
+      uploaded_by INTEGER,
+      source TEXT NOT NULL DEFAULT 'upload',
+      original_filename TEXT,
+      server_filename TEXT,
       mime_type TEXT,
       filesize INTEGER,
-      instagram_url TEXT, -- si source = 'instagram'
+      instagram_url TEXT,
       description TEXT,
       uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
       FOREIGN KEY (boulder_id) REFERENCES boulder(id) ON DELETE CASCADE,
       FOREIGN KEY (uploaded_by) REFERENCES users(id),
 
-      -- si source = 'instagram' alors instagram_url doit être non NULL,
-      -- si source = 'upload' alors original_filename doit être non NULL
       CHECK (
         (source = 'instagram' AND instagram_url IS NOT NULL)
         OR
@@ -251,7 +250,9 @@ async function initDb() {
     
     CREATE INDEX IF NOT EXISTS idx_event_start_date
       ON event(start_date);
+    
   `);
+  
 
       return db;
     }

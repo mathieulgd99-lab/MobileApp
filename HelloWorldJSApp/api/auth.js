@@ -493,25 +493,23 @@ export async function getBoulderVideos(boulderId, token) {
 }
 
 export async function createBoulderVideo(boulderId, data, token) {
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/boulders/${boulderId}/videos`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      }
-    );
+  const isFormData = data instanceof FormData;
 
-    const json = await res.json();
-    if (!res.ok) return { error: json };
-    return json;
-  } catch (err) {
-    return { error: err.message };
-  }
+  const res = await fetch(
+    `${API_BASE}/api/boulders/${boulderId}/videos`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: isFormData ? data : JSON.stringify(data),
+    }
+  );
+
+  const json = await res.json();
+  if (!res.ok) return { error: json };
+  return json;
 }
 
 export async function deleteVideo(videoId, token) {

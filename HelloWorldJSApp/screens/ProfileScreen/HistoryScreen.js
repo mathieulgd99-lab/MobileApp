@@ -5,9 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
-  Modal,
-  SafeAreaView,
   ScrollView
 } from 'react-native';
 import styles from '../styles';
@@ -138,6 +135,7 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
         onOpenComments={openComments}
         commentCount={getCommentCount(imageModal.boulder?.id)}
         canValidate={false}
+        isHistory={true}
       />
 
       {/* -------- COMMENTS MODAL -------- */}
