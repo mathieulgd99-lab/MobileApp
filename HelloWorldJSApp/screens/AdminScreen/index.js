@@ -4,11 +4,12 @@
   import { Ionicons } from '@expo/vector-icons';
 
   import ModifyWallsScreen from './ModifyWallsScreen';
+  import AddEventsScreen from './AddEventScreen';
   import { AuthContext } from '../../context/AuthContext';
   import { getUserProfile} from '../../api/auth';
   import { COLORS} from '../colors.js';
 
-  const API_BASE = "http://192.168.190.72:3000";
+  const API_BASE = "http://192.168.1.28:3000";
   const Tab = createMaterialTopTabNavigator();
   
   export default function ProfileScreen({ route, navigation }) {
@@ -104,9 +105,9 @@
               )}
             </Tab.Screen>
   
-            <Tab.Screen name="Modify the events">
+            <Tab.Screen name="Add an event">
               {() => (
-              <ModifyWallsScreen
+              <AddEventsScreen
                   profileUser={profileUser}
                   token={token}
                 />

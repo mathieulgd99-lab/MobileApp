@@ -580,7 +580,7 @@ dropdownItemText: {
   creator_container: {
     flex: 1,
     padding: 20,
-     backgroundColor: COLORS.background,
+    backgroundColor: COLORS.background,
   },
 
   creator_title: {
@@ -764,7 +764,104 @@ dropdownItemText: {
   creator_tagText: {
     color: 'white',
     fontSize: 12,
-  }
+  },
+
+  event_container: {
+    padding: 20,
+    backgroundColor: COLORS.background,
+  },
+
+/* Dates */
+event_datesBox: {
+  height: 50,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: '#999',
+  backgroundColor: COLORS.background,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 20,
+},
+
+event_datesText: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: '#999',
+},
+
+event_datesLabel: {
+  marginTop: 12,
+  marginBottom: 6,
+  fontSize: 14,
+  color: '#aaa',          // gris clair
+  textAlign: 'center',
+},
+
+event_datesTitle: {
+  color: '#fff',
+  fontSize: 16,
+  marginBottom: 10,
+},
+
+event_datesResult: {
+  color: '#ccc',
+  marginTop: 10,
+  textAlign: 'center',
+  top: 10,
+  bottom: 15,
+},
+
+
+
+/* Image */
+event_imageBox: {
+  height: 220,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: '#999',
+  backgroundColor: COLORS.background,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: 30,
+  marginBottom: 30,
+  overflow: 'hidden',
+},
+event_image: {
+  width: '100%',
+  height: '100%',
+  borderRadius: 10,
+  resizeMode: 'cover',
+},
+
+/* Description */
+event_descriptionBox: {
+  height: 150,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: '#999',
+  backgroundColor: COLORS.background,
+  padding: 15,
+  marginBottom: 20,
+},
+
+event_descriptionInput: {
+  flex: 1,
+  fontSize: 16,
+  color: '#ffffffff',
+  textAlignVertical: 'top',
+},
+
+event_placeholderText: {
+  color: '#999',
+  fontSize: 16,
+  marginBottom: 8,
+},
+
+event_plus: {
+  fontSize: 48,
+  color: '#999',
+  opacity: 0.6,
+},
 
 
 });
