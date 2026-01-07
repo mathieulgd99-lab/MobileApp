@@ -966,13 +966,13 @@ async function getOrCreateTodaySession(db, userId) {
         return res.status(404).json({ error: 'Video not found' });
       }
   
-      if (video.uploaded_by !== userId && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-  
       if (video.source === 'upload' && video.server_filename) {
         const filePath = path.join(__dirname, 'uploads', video.server_filename);
-        fs.unlinkSync(filePath);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        } else {
+          console.warn('File not found on disk:', filePath);
+        }
       }
   
       await db.run(`DELETE FROM video WHERE id = ?`, [videoId]);

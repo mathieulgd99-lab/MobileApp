@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   Modal,
   View,
@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Video } from 'expo-av';
+import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -16,7 +17,10 @@ export default function PlayVideoModal({
   visible,
   onClose,
   videos = [],
+  onRemove
 }) {
+  const { user } = useContext(AuthContext);
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
@@ -42,11 +46,22 @@ export default function PlayVideoModal({
 
             {videos.map((video) => (
               <View key={video.id} style={styles.videoCard}>
-
+                <View style={styles.headerRow}>
                 {/* User name */}
                 <Text style={styles.username}>
                   👤 {video.uploaded_by_name || 'Utilisateur inconnu'}
                 </Text>
+
+                {(user?.role === 'admin' ||
+                  user?.display_name === video.uploaded_by_name) && (
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => onRemove(video)}
+                  >
+                    <Text style={styles.deleteButtonText}>Supprimer</Text>
+                  </TouchableOpacity>
+                )}
+                </View>
 
                 {/* Video */}
                 {video.source === 'upload' && video.video_url && (
@@ -163,4 +178,24 @@ const styles = StyleSheet.create({
       color: '#aaa',
       fontSize: 12,
     },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    
+    deleteButton: {
+      backgroundColor: '#c62828',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 6,
+    },
+    
+    deleteButtonText: {
+      color: '#fff',
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    
   });

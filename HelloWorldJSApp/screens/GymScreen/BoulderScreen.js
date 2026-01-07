@@ -9,7 +9,7 @@ import { ScrollView,
 } from 'react-native';
 import Svg, {Polygon } from 'react-native-svg';
 import styles from '../styles';
-import { getBoulders, getValidatedBoulders, createBoulderVideo,getBoulderVideos } from '../../api/auth';
+import { getBoulders, getValidatedBoulders, createBoulderVideo,getBoulderVideos,deleteVideo } from '../../api/auth';
 import { AuthContext } from '../../context/AuthContext';
 
 import useBoulders from '../Hooks/useBoulder';
@@ -157,6 +157,11 @@ export default function BoulderScreen() {
       console.error('Erreur openVideos:', err);
     }
   }
+
+  async function handleRemoveVideo(video) {
+    await deleteVideo(video.id, token);
+    setVideos(videos.filter(v => v.id !== video.id));
+  }
   
 
  
@@ -275,6 +280,7 @@ return (
           visible={showVideos}
           onClose={() => setShowVideos(false)}
           videos={videos}
+          onRemove={handleRemoveVideo}
         />
 
       </ScrollView>
