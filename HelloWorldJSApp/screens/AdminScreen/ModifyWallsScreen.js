@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
 import { View, Text, TouchableOpacity, Image, FlatList, ScrollView } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from "expo-image-picker";
 import styles from '../styles';
 import { BLOC_COLORS } from '../colors';
@@ -30,12 +29,20 @@ const HOLD_TYPES = [
 ];
 
 const SKILLS = [
-  { label: 'Physique', value: 'physique' },
-  { label: 'Dynamique', value: 'dynamique' },
-  { label: 'Technique', value: 'technique' },
+  { label: 'Physical', value: 'physical' },
+  { label: 'Dynamic', value: 'dynamic' },
+  { label: 'Technical', value: 'technical' },
   { label: 'Tension', value: 'tension' },
-  { label: 'Équilibre', value: 'equilibre' },
-  { label: 'Lecture', value: 'lecture' },
+  { label: 'Balance', value: 'balance' },
+  { label: 'Reading', value: 'reading' },
+];
+
+const WALL_TYPES = [
+  { label: 'Slab', value: 'slab' },
+  { label: 'Vertical', value: 'vertical' },
+  { label: 'Overhang', value: 'overhang' },
+  { label: 'Dihedral', value: 'dihedral' },
+  { label: 'Roof', value: 'roof' },
 ];
 
 const DIFFICULTIES = Array.from({ length: 14 }, (_, i) => String(i + 1));
@@ -54,6 +61,8 @@ export default function BlocCreatorScreen() {
 
   const [selectedHolds, setSelectedHolds] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
+  const [selectedWallType, setSelectedWallType] = useState(null);
+
   
   const pickImage = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
@@ -77,13 +86,14 @@ export default function BlocCreatorScreen() {
   
   
   const addBloc = () => {
-    if (!selectedColor || !selectedDifficulty || currentImageIndex === null) {
+    if (!selectedColor || !selectedDifficulty || currentImageIndex === null || !selectedWallType || selectedHolds.length === 0 || selectedSkills.length === 0) {
       return alert("Missing data");
     }
   
     const newBloc = {
       color: selectedColor,
       difficulty: selectedDifficulty,
+      wallType: selectedWallType,
       holds: selectedHolds,
       skills: selectedSkills,
     };
@@ -95,7 +105,7 @@ export default function BlocCreatorScreen() {
           : img
       )
     );
-  
+    setSelectedWallType(null);
     setSelectedColor(null);
     setSelectedDifficulty(null);
     setSelectedHolds([]);
@@ -116,6 +126,7 @@ export default function BlocCreatorScreen() {
             bloc.color,
             token,
             {
+              wallType: bloc.wallType,
               holds: bloc.holds,
               skills: bloc.skills
             }
@@ -153,12 +164,12 @@ export default function BlocCreatorScreen() {
 
           {WALLS.map((w) => (
             <TouchableOpacity
-              key={w.value}
+              key={w.label}
               style={[
                 styles.creator_optionButton,
-                selectedWall === w.value && styles.creator_optionSelected
+                selectedWall === w.label && styles.creator_optionSelected
               ]}
-              onPress={() => { setSelectedWall(w.value); setPhase(2); }}
+              onPress={() => { setSelectedWall(w.label); setPhase(2); }}
             >
               <Text style={styles.creator_optionText}>{w.label}</Text>
             </TouchableOpacity>
@@ -171,7 +182,7 @@ export default function BlocCreatorScreen() {
       {/* ------------------------ PHASE 2 : ADD IMAGES ------------------------ */}
       {phase === 2 && (
         <View>
-          <Text style={styles.creator_title}> Add a picture for : {WALLS.find(w => w.value === selectedWall)?.label || selectedWall}</Text>
+          <Text style={styles.creator_title}> Add a picture for : {WALLS.find(w => w.label === selectedWall)?.label || selectedWall}</Text>
 
           <TouchableOpacity style={styles.creator_mainButton} onPress={pickImage}>
             <Text style={styles.creator_mainButtonText}>Choose an image</Text>
@@ -271,6 +282,22 @@ export default function BlocCreatorScreen() {
                   ))}
                 </View>
               )}
+            </View>
+
+            <Text style={styles.creator_subtitle}>Wall type</Text>
+            <View style={styles.creator_row}>
+              {WALL_TYPES.map(w => (
+                <TouchableOpacity
+                  key={w.value}
+                  style={[
+                    styles.creator_tag,
+                    selectedWallType === w.value && styles.creator_tagSelected
+                  ]}
+                  onPress={() => setSelectedWallType(w.value)}
+                >
+                  <Text style={styles.creator_tagText}>{w.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             <Text style={styles.creator_subtitle}>Hold types</Text>

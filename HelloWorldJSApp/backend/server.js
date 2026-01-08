@@ -38,6 +38,7 @@ function auth(req, res, next) {
       id: payload.userId,
       email: payload.email,
       role: payload.role,
+      display_name: payload.display_name,
     };
     next();
   } catch (err) {
@@ -104,7 +105,7 @@ async function getOrCreateTodaySession(db, userId) {
 
           const userId = result.lastID;
           const user = await db.get('SELECT id, email, display_name, role, total_points, created_at FROM users WHERE id = ?', [userId]);
-          const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+          const token = jwt.sign({ userId: user.id, email: user.email, role: user.role, display_name: user.display_name }, JWT_SECRET, { expiresIn: '7d' });
           console.log("serv.js : end", token)
           res.json({ token, user });
         } catch (err) {
@@ -124,7 +125,7 @@ async function getOrCreateTodaySession(db, userId) {
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) return res.status(401).json({ error: 'Invalid password'})
         const role = user.role || 'user';
-        const token = jwt.sign({ userId: user.id, email, role}, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id, email, role, display_name: user.display_name}, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token, user: { id: user.id, email, display_name: user.display_name, role, created_at: user.created_at } });
         console.log("server.js : end login ")
     });
@@ -216,7 +217,8 @@ async function getOrCreateTodaySession(db, userId) {
     app.post('/api/boulders', auth, requireAdmin, upload.single('boulder'), async (req, res) => {
       try {
         console.log('POST /api/boulders');
-    
+        console.log("post boulders req.file : ",req.file)
+        console.log("post boulders req.body : ",req.body)
         const file = req.file;
         const {
           zoneId,
@@ -237,7 +239,7 @@ async function getOrCreateTodaySession(db, userId) {
         }
     
         const storedPath = path.relative(__dirname, file.path).replace(/\\/g, '/');
-        const uploadedBy = req.user?.userId || null;
+        const uploadedBy = req.user?.id || null;
     
         await db.exec('BEGIN TRANSACTION');
     
@@ -518,8 +520,8 @@ async function getOrCreateTodaySession(db, userId) {
 
     app.post('/api/comment/:boulderId', auth, async (req, res) => {
       try {
-        const userId = req.user.userId;
-        const userName = req.user.display_name
+        const userId = req.user.id;
+        const userName = req.user.display_name;
         const boulderId = req.params.boulderId;
         const content = (req.body.comment ?? '').trim();
         console.log("POST /api/comment", { userId, userName, boulderId, content });
@@ -576,7 +578,7 @@ async function getOrCreateTodaySession(db, userId) {
           return res.status(404).json({ error: 'Comment not found' });
         }
     
-        const requesterId = req.user.userId;
+        const requesterId = req.user.id;
         const requesterRole = req.user.role;
         const isOwner = requesterId === comment.user_id;
         const isAdmin = requesterRole === 'admin';
@@ -702,7 +704,7 @@ async function getOrCreateTodaySession(db, userId) {
     
         if (!user) return res.status(404).json({ error: 'User not found' });
     
-        const requesterId = req.user.userId;
+        const requesterId = req.user.id;
         const requesterRole = req.user.role;
     
         if (requesterId !== userId && requesterRole !== 'admin') {

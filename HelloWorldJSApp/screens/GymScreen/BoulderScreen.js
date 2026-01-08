@@ -27,17 +27,17 @@ const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur
   const zones = [
-    { id: 'murCoin', points: ' 40,300 20,300 20,400 80,400 60,380 40,380', label: 'Mur ouest' },
-    { id: 'murDalle', points: '20,300 40,300 50,250 40,200 20,200', label: 'Mur O-milieu' },
-    { id: 'murTension', points: '20,200 40,200 40,120 20,100', label: 'Mur O-haut' },
-    { id: 'murToit', points: '20,100 40,120 50,80 120,80 130,50 40,50', label: 'Mur N-O' },
-    { id: 'murDynamique', points: '130,50 120,80 220,80 220,50', label: 'Mur N-milieu' },
-    { id: 'murPorte', points: '220,50 320,50 320,120, 295,120 295,80 220,80', label: 'Mur N-E' },
-    { id: 'murDevers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160', label: 'Mur E' },
-    { id: 'murDiedre', points: '295,230 320,230 320,290 295,270', label: 'Mur E-milieu' },
-    { id: 'murAngle', points: '295,270 320,290 250,290 260,270', label: 'Mur E-bas' },
-    { id :'murAngle2', points: '250,290 250,310 255,320 295,320 295,325 320,325 320,300 260,300 260,290' , label: 'Mur central' },
-    { id: 'murEasy', points: '295,325 320,325 320,400 250,400 250,380 295,380 ', label: 'Mur sud' },
+    { label: 'Mur Coin', points: ' 40,300 20,300 20,400 80,400 60,380 40,380' },
+    { label: 'Mur Dalle', points: '20,300 40,300 50,250 40,200 20,200'},
+    { label: 'Mur Tension', points: '20,200 40,200 40,120 20,100'},
+    { label: 'Mur Toit', points: '20,100 40,120 50,80 120,80 130,50 40,50'},
+    { label: 'Mur Dynamique', points: '130,50 120,80 220,80 220,50'},
+    { label: 'Mur Porte', points: '220,50 320,50 320,120, 295,120 295,80 220,80'},
+    { label: 'Mur Devers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160'},
+    { label: 'Mur Diedre', points: '295,230 320,230 320,290 295,270'},
+    { label: 'Mur Angle', points: '295,270 320,290 250,290 260,270'},
+    { label :'Mur Angle 2', points: '250,290 250,310 255,320 295,320 295,325 320,325 320,300 260,300 260,290'},
+    { label: 'Mur Easy', points: '295,325 320,325 320,400 250,400 250,380 295,380 '},
   ];
 
   const {user, token} = useContext(AuthContext);
@@ -68,7 +68,8 @@ export default function BoulderScreen() {
     getFiltered,
     deleteBoulder,
     archiveBoulder,
-    isValidated
+    isValidated,
+    countValidatedGrade
   } = useBoulders(token);
 
   const {
@@ -127,8 +128,8 @@ export default function BoulderScreen() {
     setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
   }
 
-  const handleClickZone = (zoneId) => {
-    setSelectedZone(prev => prev === zoneId ? null : zoneId);
+  const handleClickZone = (zoneLabel) => {
+    setSelectedZone(prev => prev === zoneLabel ? null : zoneLabel);
   };
 
   function handleUploadVideo(boulder) {
@@ -183,12 +184,12 @@ export default function BoulderScreen() {
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
     const backColor = isSelected ? '#8bc34a' : '#808080'
-
+    const validated = countValidatedGrade(item.difficulty);
     return (
       <TouchableOpacity
       onPress={() => handleClickGrade(item.difficulty)}
       >
-        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  0/{countGrade(item.difficulty)}</Text>
+        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  {validated}/{countGrade(item.difficulty)}</Text>
       </TouchableOpacity>
     )
   }
@@ -205,12 +206,12 @@ return (
         <Svg height="500" width="350" style={styles.map}>
           {zones.map((zone) => (
             <Polygon
-              key={zone.id}
+              key={zone.label}
               points={zone.points}
-              fill={selectedZone === zone.id ? '#8bc34a' : '#808080'}
+              fill={selectedZone === zone.label ? '#8bc34a' : '#808080'}
               stroke="#fff"
               strokeWidth="1"
-              onPressOut={() => handleClickZone(zone.id)}
+              onPressOut={() => handleClickZone(zone.label)}
             />
           ))}
         </Svg>

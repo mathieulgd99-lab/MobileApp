@@ -127,13 +127,16 @@ export function useBoulders(token,userId = null) {
     let res = [...boulders];
     if (archived === true) res = res.filter((b) => b.archived_at); // archivés
     else if (archived === false) res = res.filter((b) => !b.archived_at); // non archivés
-    if (zone) res = res.filter((b) => b.zoneId === zone);
+    if (zone) res = res.filter((b) => b.zone_id === zone);
     if (grade) res = res.filter((b) => b.grade === grade);
     return res;
   };
   
   const countGrade = (difficulty) =>
     boulders.filter(b => b.grade === difficulty).length;
+
+  const countValidatedGrade = (difficulty) =>
+    validatedBoulders.filter(b => b.grade === difficulty).length;
 
   const grades = [
     { id:'1', difficulty: 1},
@@ -199,7 +202,7 @@ export function useBoulders(token,userId = null) {
     deleteBoulder,
     getTotalPoint,
     getEachUserPoint,
-
+    countValidatedGrade
   };
 }
 

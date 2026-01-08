@@ -59,7 +59,7 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token, option
         const filename = pickedAsset.fileName || uri.split('/').pop();
         const mimeType = guessMimeType(filename);
         const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
-        const { holds = [], skills = [] } = options;
+        const { wallType, holds = [], skills = [] } = options;
 
         formData.append('boulder', {
         uri: fileUri,
@@ -70,6 +70,7 @@ export async function addBoulder(pickedAsset, zoneId, grade, color,token, option
         formData.append('zoneId', zoneId);
         formData.append('grade', String(grade));
         formData.append('color', color);
+        formData.append('wallType', wallType);
         holds.forEach(h =>
           formData.append('holds[]', h)
         );
@@ -116,6 +117,7 @@ export async function getBoulders() {
         console.log('getBoulder error', json);
         return { error: json };
       }
+      console.log("res getboulders :",json)
       return json;
     } catch (err) {
       console.error('getBoulders error', err);
