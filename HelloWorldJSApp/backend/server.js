@@ -985,108 +985,109 @@ async function getOrCreateTodaySession(db, userId) {
   });
   
 
-    app.get('/api/events', async (req, res) => {
-      try {
-        const events = await db.all(
-          `
-          SELECT event.*, users.display_name AS uploaded_by_name
-          FROM event
-          LEFT JOIN users ON users.id = event.uploaded_by
-          ORDER BY start_date ASC
-          `
-        );
-    
-        res.json({ events });
-      } catch (err) {
-        console.error('Error fetching events:', err);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    });
+  app.get('/api/events', auth, async (req, res) => {
+    try {
+      const events = await db.all(
+        `
+        SELECT event.*, users.display_name AS uploaded_by_name
+        FROM event
+        LEFT JOIN users ON users.id = event.uploaded_by
+        ORDER BY start_date ASC
+        `
+      );
+  
+      res.json({ events });
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
-    app.post('/api/events', requireAdmin,auth, async (req, res) => {
-      try {
-        const userId = req.user.id;
-        const {
+  app.post('/api/events', auth, requireAdmin,upload.single('event'), async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const {
+        title,
+        description,
+        start_date,
+        end_date,
+        original_filename,
+        mime_type,
+        filesize
+      } = req.body;
+      const file = req.file;
+
+      if (!title || !start_date || !end_date) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      console.log("req.body events: ",req.body)
+      console.log("req.file events: ",req.file)
+      await db.run(
+        `
+        INSERT INTO event (
           title,
           description,
-          start_date,
-          end_date,
+          uploaded_by,
           original_filename,
+          server_filename,
           mime_type,
-          filesize
-        } = req.body;
-    
-        if (!title || !start_date || !end_date) {
-          return res.status(400).json({ error: 'Missing required fields' });
-        }
-    
-        await db.run(
-          `
-          INSERT INTO event (
-            title,
-            description,
-            uploaded_by,
-            original_filename,
-            mime_type,
-            filesize,
-            start_date,
-            end_date
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `,
-          [
-            title,
-            description || null,
-            userId,
-            original_filename || null,
-            mime_type || null,
-            filesize || null,
-            start_date,
-            end_date
-          ]
-        );
-    
-        res.status(201).json({ success: true });
-      } catch (err) {
-        console.error('Error creating event:', err);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    });
-
-    app.delete('/api/events/:eventId', requireAdmin, auth, async (req, res) => {
-      try {
-        const eventId = Number(req.params.eventId);
-        const userId = req.user.id;
-    
-        if (!eventId) {
-          return res.status(400).json({ error: 'Invalid event id' });
-        }
-    
-        const event = await db.get(
-          `SELECT * FROM event WHERE id = ?`,
-          [eventId]
-        );
-    
-        if (!event) {
-          return res.status(404).json({ error: 'Event not found' });
-        }
-    
-        if (event.uploaded_by !== userId && req.user.role !== 'admin') {
-          return res.status(403).json({ error: 'Forbidden' });
-        }
-    
-        await db.run(`DELETE FROM event WHERE id = ?`, [eventId]);
-    
-        res.json({ success: true });
-      } catch (err) {
-        console.error('Error deleting event:', err);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    });
-    
-    
-    
+          filesize,
+          start_date,
+          end_date
+        )
+        VALUES (?, ?, ?, ?,?, ?, ?, ?, ?)
+        `,
+        [
+          title,
+          description || null,
+          userId,
+          original_filename || null,
+          file?.filename || null,
+          mime_type || null,
+          filesize || null,
+          start_date,
+          end_date
+        ]
+      );
   
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error('Error creating event:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/api/events/:eventId', requireAdmin, auth, async (req, res) => {
+    try {
+      const eventId = Number(req.params.eventId);
+      const userId = req.user.id;
+  
+      if (!eventId) {
+        return res.status(400).json({ error: 'Invalid event id' });
+      }
+  
+      const event = await db.get(
+        `SELECT * FROM event WHERE id = ?`,
+        [eventId]
+      );
+  
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+  
+      if (event.uploaded_by !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+  
+      await db.run(`DELETE FROM event WHERE id = ?`, [eventId]);
+  
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
     
 }

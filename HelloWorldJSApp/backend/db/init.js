@@ -218,8 +218,9 @@ async function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       description TEXT,
-      uploaded_by INTEGER, -- utilisateur qui créé l'event / upload l'image
-      original_filename TEXT, -- image
+      uploaded_by INTEGER,
+      original_filename TEXT,
+      server_filename TEXT, 
       mime_type TEXT,
       filesize INTEGER,
       start_date DATETIME NOT NULL,

@@ -537,9 +537,7 @@ export async function getEvents(token) {
     const res = await fetch(
       `${API_BASE}/api/events`,
       {
-        headers: token
-          ? { Authorization: `Bearer ${token}` }
-          : {},
+        headers: { Authorization: `Bearer ${token}` }
       }
     );
 
@@ -553,19 +551,20 @@ export async function getEvents(token) {
 
 export async function createEvent(data, token) {
   try {
+    console.log("data entrée create event : ",data)
     const res = await fetch(
       `${API_BASE}/api/events`,
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: data,
       }
     );
 
     const json = await res.json();
+    console.log("create event return : ", json)
     if (!res.ok) return { error: json };
     return json;
   } catch (err) {
