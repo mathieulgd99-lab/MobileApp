@@ -74,7 +74,7 @@ export default function RankingScreen() {
   const {user, token} = useContext(AuthContext);
 
   const navigation = useNavigation();
-  const { getTotalPoint } = useBoulders();
+  const { getTotalPoint } = useBoulders(token);
 
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);

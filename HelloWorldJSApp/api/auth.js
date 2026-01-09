@@ -111,13 +111,13 @@ export async function getBoulders() {
       const res = await fetch(`${API_BASE}/api/boulders`, {
         method: 'GET',
       });
-      console.log("getBoulders")
+      // console.log("getBoulders")
       const json = await res.json();
       if (!res.ok) {
         console.log('getBoulder error', json);
         return { error: json };
       }
-      console.log("res getboulders :",json)
+      // console.log("res getboulders :",json)
       return json;
     } catch (err) {
       console.error('getBoulders error', err);
@@ -136,6 +136,7 @@ export async function getValidatedBoulders(token) {
 
     const json = await res.json();
     if (!res.ok) {
+      console.log("error token :",token)
       console.log('GetValidatedBoulder error', json);
       return { error: json };
     }

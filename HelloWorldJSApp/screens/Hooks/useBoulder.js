@@ -33,6 +33,7 @@ export function useBoulders(token,userId = null) {
       if (!valid.error) {
         setValidatedBoulders(valid.boulders || []);
       } else {
+        console.log("Error dans loadALl useBoulder")
         setValidatedBoulders([]);
         setError((prev) => prev || valid.error || 'Erreur getValidatedBoulders');
       }

@@ -349,8 +349,8 @@ async function getOrCreateTodaySession(db, userId) {
 
     app.get('/api/boulders/validated', auth, async (req, res) => {
       try {
+        console.log("Entrée get validated boulders server.js")
         const userId = req.user.id;
-    
         const boulders = await db.all(`
           SELECT
             b.*,
@@ -365,7 +365,7 @@ async function getOrCreateTodaySession(db, userId) {
           WHERE bv.user_id = ?
           GROUP BY b.id
         `, [userId]);
-    
+        console.log("fin requete sql get validated boulders server.js")
         res.json({
           boulders: boulders.map(b => ({
             ...b,
@@ -376,6 +376,7 @@ async function getOrCreateTodaySession(db, userId) {
     
       } catch (err) {
         console.error("Error fetching validated boulders:", err);
+        console.log("Error fetching validated boulders:", err);
         res.status(500).json({ error: "Internal server error" });
       }
     });

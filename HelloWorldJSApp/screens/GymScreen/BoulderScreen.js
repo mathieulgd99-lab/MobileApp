@@ -97,7 +97,7 @@ export default function BoulderScreen() {
     if (!validated.error) {
       setValidatedBoulders(validated.boulders);
     } else {
-      console.log("Erreur getValidatedBoulders :", validated.error);
+      console.log("Erreur loadBoulders getValidatedBoulders :", validated.error);
     }
     console.log("boulders : ",result.boulders)
     console.log("Validated: ",validated.boulders)
@@ -183,18 +183,33 @@ export default function BoulderScreen() {
   }
   
   
-  const renderGrade =  ({item}) => {
+  const renderGrade = ({ item }) => {
     const isSelected = selectedGrade === item.difficulty;
-    const backColor = isSelected ? '#8bc34a' : '#808080'
-    const validated = countValidatedGrade(item.difficulty);
+  
     return (
       <TouchableOpacity
-      onPress={() => handleClickGrade(item.difficulty)}
+        onPress={() => handleClickGrade(item.difficulty)}
+        activeOpacity={0.8}
+        style={[
+          localStyles.gradeChip,
+          isSelected && localStyles.gradeChipSelected,
+        ]}
       >
-        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  {validated}/{countGrade(item.difficulty)}</Text>
+        <Text
+          style={[
+            localStyles.gradeText,
+            isSelected && localStyles.gradeTextSelected,
+          ]}
+        >
+          {item.difficulty}
+        </Text>
+  
+        <Text style={localStyles.gradeCount}>
+          {countValidatedGrade(item.difficulty)}/{countGrade(item.difficulty)}
+        </Text>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
 
   if (loading) {
@@ -205,7 +220,7 @@ return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}
     style={{ backgroundColor: '#121212' }}>
-        <Svg height="500" width="350" style={styles.map}>
+        <Svg height="450" width="350" style={styles.map}>
           {zones.map((zone) => (
             <Polygon
               key={zone.label}
@@ -217,19 +232,19 @@ return (
             />
           ))}
         </Svg>
+        <View style={localStyles.section}>
+          <Text style={localStyles.sectionTitle}>Boulders</Text>
 
-        <View style={styles.container}>
-          <Text style={styles.text}>Boulders</Text>
+          <FlatList
+            data={grades}
+            horizontal
+            keyExtractor={(grade) => grade.id}
+            renderItem={renderGrade}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={localStyles.gradeList}
+            extraData={selectedGrade}
+          />
         </View>
-
-        <FlatList
-          data={grades}
-          horizontal
-          keyExtractor={(grade) => grade.id}
-          renderItem={renderGrade}
-          scrollEnabled={true}
-          extraData={selectedGrade}
-        />
 
         <BlocksList
           boulders={filteredBoulders}
@@ -326,4 +341,53 @@ const localStyles = StyleSheet.create({
     width: "100%",
     height: "85%",
   },
+
+  gradeChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginRight: 10,
+    borderRadius: 16,
+    backgroundColor: '#2A2A2A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
+  },
+  
+  gradeChipSelected: {
+    backgroundColor: '#8bc34a',
+  },
+  
+  gradeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#E0E0E0',
+  },
+  
+  gradeTextSelected: {
+    color: '#121212',
+  },
+  
+  gradeCount: {
+    fontSize: 11,
+    marginTop: 2,
+    color: '#B0B0B0',
+  },
+  section: {
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  
+  gradeList: {
+    paddingHorizontal: 4,
+  },
+  
+  
 });
