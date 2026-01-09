@@ -205,7 +205,7 @@ export default function BoulderScreen() {
         </Text>
   
         <Text style={localStyles.gradeCount}>
-          {countValidatedGrade(item.difficulty)}/{countGrade(item.difficulty)}
+          {countValidatedGrade(item.difficulty,false)}/{countGrade(item.difficulty,false)}
         </Text>
       </TouchableOpacity>
     );
@@ -354,7 +354,7 @@ const localStyles = StyleSheet.create({
   },
   
   gradeChipSelected: {
-    backgroundColor: '#8bc34a',
+    backgroundColor: '#357756',
   },
   
   gradeText: {

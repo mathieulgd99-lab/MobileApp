@@ -133,11 +133,29 @@ export function useBoulders(token,userId = null) {
     return res;
   };
   
-  const countGrade = (difficulty) =>
-    boulders.filter(b => b.grade === difficulty).length;
+  const countGrade = (difficulty, archived = null) => {
+    return boulders.filter(b => {
+      if (b.grade !== difficulty) return false;
+  
+      if (archived === true) return !!b.archived_at;
+      if (archived === false) return !b.archived_at;
+  
+      return true;
+    }).length;
+  };
+  
 
-  const countValidatedGrade = (difficulty) =>
-    validatedBoulders.filter(b => b.grade === difficulty).length;
+  const countValidatedGrade = (difficulty, archived = null) => {
+    return validatedBoulders.filter(b => {
+      if (b.grade !== difficulty) return false;
+  
+      if (archived === true) return !!b.archived_at;
+      if (archived === false) return !b.archived_at;
+  
+      return true;
+    }).length;
+  };
+  
 
   const grades = [
     { id:'1', difficulty: 1},
