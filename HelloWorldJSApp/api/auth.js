@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 
 // sert de router, appels les fonctions qui font des appels précis à la  database
-const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
-
+//const API_BASE = "http://192.168.1.165:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 
 export async function login(email, password) {

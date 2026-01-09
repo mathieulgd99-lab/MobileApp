@@ -9,7 +9,9 @@
   import { getUserProfile} from '../../api/auth';
   import { COLORS} from '../colors.js';
 
-  const API_BASE = "http://192.168.1.28:3000";
+  //const API_BASE = "http://192.168.1.165:3000";
+  const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
+
   const Tab = createMaterialTopTabNavigator();
   
   export default function ProfileScreen({ route, navigation }) {

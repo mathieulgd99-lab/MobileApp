@@ -19,7 +19,9 @@ import StatisticScreen from './StatisticScreen';
 import { AuthContext } from '../../context/AuthContext';
 import { getUserProfile, updateDisplayName, updatePassword } from '../../api/auth';
 
-const API_BASE = "http://192.168.190.72:3000";
+//const API_BASE = "http://192.168.1.165:3000";
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 const Tab = createMaterialTopTabNavigator();
 
 export default function ProfileScreen({ route, navigation }) {

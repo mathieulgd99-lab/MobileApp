@@ -22,7 +22,9 @@ import UploadVideoModal from '../../components/UploadVideoModal';
 import PlayVideoModal from '../../components/PlayVideoModal';
 
 
-const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+//const API_BASE = "http://192.168.1.165:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 
 export default function BoulderScreen() { 
   // 20,40 = en haut a gauche : 0,0 = tout en haut a gauche, le premier point = la largeur

@@ -17,7 +17,8 @@ import BlocksList from '../../components/BlockList';
 import BoulderModal from '../../components/BoulderModal';
 import CommentsModal from '../../components/CommentsModal';
 
-const API_BASE = "http://192.168.190.72:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+//const API_BASE = "http://192.168.1.165:3000"; // mon pc trouvé avec ifconfig A MODIF EN CONSÉQUENCES
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 
 export default function HistoryScreen({ profileUser, token: tokenProp }) {
