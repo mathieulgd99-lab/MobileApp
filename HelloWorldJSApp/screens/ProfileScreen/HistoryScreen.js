@@ -39,7 +39,8 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
     deleteBoulder,
     archiveBoulder,
     countGrade,
-    isValidated
+    isValidated,
+    countValidatedGrade
   } = useBoulders(authToken, profileUser?.id);
 
 
@@ -75,13 +76,28 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
 
   const renderGrade =  ({item}) => {
     const isSelected = selectedGrade === item.difficulty;
-    const backColor = isSelected ? '#8bc34a' : '#808080'
-    const count = countGrade(item.difficulty)
+    const count = showAll ? countValidatedGrade(item.difficulty,true) + countValidatedGrade(item.difficulty,false) : countValidatedGrade(item.difficulty,false)
     return (
       <TouchableOpacity
-      onPress={() => handleClickGrade(item.difficulty)}
+        onPress={() => handleClickGrade(item.difficulty)}
+        activeOpacity={0.8}
+        style={[
+          localStyles.gradeChip,
+          isSelected && localStyles.gradeChipSelected,
+        ]}
       >
-        <Text style={[styles.grade, { backgroundColor: backColor }]}> {item.difficulty}  {count}/{count}</Text>
+        <Text
+          style={[
+            localStyles.gradeText,
+            isSelected && localStyles.gradeTextSelected,
+          ]}
+        >
+          {item.difficulty}
+        </Text>
+  
+        <Text style={localStyles.gradeCount}>
+          {count}/{count}
+        </Text>
       </TouchableOpacity>
     )
   }
@@ -103,15 +119,19 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
           </Text>
         </TouchableOpacity>
       </View>
-    
-    <FlatList
-        data={grades}
-        horizontal
-        keyExtractor={(grade) => grade.id}
-        renderItem={renderGrade}
-        scrollEnabled={true}
-        extraData={selectedGrade}
-    />
+      <View style={localStyles.section}>
+          <Text style={localStyles.sectionTitle}>Boulders</Text>
+
+          <FlatList
+            data={grades}
+            horizontal
+            keyExtractor={(grade) => grade.id}
+            renderItem={renderGrade}
+            scrollEnabled={true}
+            contentContainerStyle={localStyles.gradeList}
+            extraData={selectedGrade}
+          />
+      </View>
     <ScrollView>
     <BlocksList
           boulders={filteredBoulders}
@@ -238,5 +258,36 @@ const localStyles = StyleSheet.create({
   empty: {
     color: 'white',
     alignSelf: 'center',
+  },
+
+  gradeChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginRight: 10,
+    borderRadius: 16,
+    backgroundColor: '#2A2A2A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
+  },
+  
+  gradeChipSelected: {
+    backgroundColor: '#357756',
+  },
+  
+  gradeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#E0E0E0',
+  },
+  
+  gradeTextSelected: {
+    color: '#121212',
+  },
+  
+  gradeCount: {
+    fontSize: 11,
+    marginTop: 2,
+    color: '#B0B0B0',
   },
 });

@@ -271,7 +271,7 @@ const localStyles = StyleSheet.create({
   commentButtonFix: {
     position: 'absolute',
     left: 16,
-    bottom: 134,
+    bottom: 102,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',

@@ -103,6 +103,92 @@ export default function BoulderScreen() {
     archived: false,
   });
 
+  const handleClickGrade = (gradeDifficulty) => {
+    setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
+  }
+
+  const handleClickZone = (zoneLabel) => {
+    setSelectedZone(prev => prev === zoneLabel ? null : zoneLabel);
+  };
+
+  function handleUploadVideo(boulder) {
+    setActiveBoulder(boulder);
+    setUploadVideoVisible(true);
+  }
+  
+  function handleCloseUploadVideo() {
+    setUploadVideoVisible(false);
+    setActiveBoulder(null);
+  }
+
+  async function openVideos(boulderId) {
+    try {
+      setShowVideos(true);
+      setVideos([]);
+  
+      const res = await getBoulderVideos(boulderId, token);
+      console.log("res : ",res)
+      if (!res.error) {
+        setVideos(res.videos || []);
+      } else {
+        console.log('Erreur getBoulderVideos:', res.error);
+      }
+    } catch (err) {
+      console.error('Erreur openVideos:', err);
+    }
+  }
+
+  async function handleRemoveVideo(video) {
+    await deleteVideo(video.id, token);
+    setVideos(videos.filter(v => v.id !== video.id));
+  }
+  
+
+ 
+  async function handleSubmitVideo(data) {
+    if (!activeBoulder) return;
+    console.log("Boulderscreen await createbouldervideo")
+    const res = await createBoulderVideo(
+      activeBoulder.id,
+      data,
+      token
+    );
+    console.log("Boulderscreen finish createbouldervideo")
+    if (!res.error) {
+      setUploadVideoVisible(false);
+    }
+  }
+  
+  
+  const renderGrade = ({ item }) => {
+    const isSelected = selectedGrade === item.difficulty;
+  
+    return (
+      <TouchableOpacity
+        onPress={() => handleClickGrade(item.difficulty)}
+        activeOpacity={0.8}
+        style={[
+          localStyles.gradeChip,
+          isSelected && localStyles.gradeChipSelected,
+        ]}
+      >
+        <Text
+          style={[
+            localStyles.gradeText,
+            isSelected && localStyles.gradeTextSelected,
+          ]}
+        >
+          {item.difficulty}
+        </Text>
+  
+        <Text style={localStyles.gradeCount}>
+          {countValidatedGrade(item.difficulty,false)}/{countGrade(item.difficulty,false)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+
   if (loading) {
     return <ActivityIndicator size="large" color="blue" />;
   }
@@ -236,7 +322,7 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   gradeChipSelected: {
-    backgroundColor: '#8bc34a',
+    backgroundColor: '#357756',
   },
   gradeText: {
     color: '#E0E0E0',
