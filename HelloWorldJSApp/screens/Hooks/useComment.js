@@ -13,34 +13,37 @@ export default function useComment(token) {
   const [commentCounts, setCommentCounts] = useState({});
   const [currentBoulderId, setCurrentBoulderId] = useState(null);
 
+  /* ---------------- COUNTS ---------------- */
 
   const initCommentCounts = useCallback(async (boulders) => {
     if (!token || !boulders?.length) return;
-  
+
     const counts = {};
-  
     for (const boulder of boulders) {
       try {
         const res = await getComment(token, boulder.id);
-        if (!res.error) {
-          counts[boulder.id] = res.comments.length;
-        }
-      } catch (e) {
+        counts[boulder.id] = res?.comments?.length ?? 0;
+      } catch {
         counts[boulder.id] = 0;
       }
     }
-  
     setCommentCounts(counts);
   }, [token]);
 
+  const getCommentCount = (boulderId) =>
+    commentCounts[boulderId] ?? 0;
+
+  /* ---------------- OPEN / CLOSE ---------------- */
+
   const openComments = useCallback(async (boulderId) => {
-    if (!boulderId) return;
-  
+    if (!token || !boulderId) return;
+
+    
     setCurrentBoulderId(boulderId);
-  
+
     try {
       const res = await getComment(token, boulderId);
-      if (!res.error) {
+      if (!res?.error) {
         setComments(res.comments || []);
         setCommentCounts(prev => ({
           ...prev,
@@ -53,52 +56,52 @@ export default function useComment(token) {
     }
   }, [token]);
 
-  const getCommentCount = (boulderId) =>
-    commentCounts[boulderId] ?? 0;
-  
-  const addNewComment = useCallback(
-    async (content) => {
-      if (!content.trim() || !currentBoulderId) {
-        Alert.alert('Erreur', 'Commentaire invalide');
-        return;
-      }
-  
-      setPostingComment(true);
-      try {
-        const res = await addComment(token, content.trim(), currentBoulderId);
-        if (!res.error) {
-          await openComments(currentBoulderId);
-        }
-      } finally {
-        setPostingComment(false);
-      }
-    },
-    [token, currentBoulderId, openComments]
-  );
-  
-
-  const removeComment = useCallback(
-    async (commentId) => {
-      if (!currentBoulderId) return;
-  
-      Alert.alert('Confirm', 'Delete this comment?', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteComment(token, commentId);
-            await openComments(currentBoulderId);
-          },
-        },
-      ]);
-    },
-    [token, currentBoulderId, openComments]
-  );
-
-  const closeComments = () => {
+  const closeComments = useCallback(() => {
     setCommentsModal(false);
-  };
+    setCurrentBoulderId(null);
+    setComments([]);
+  }, []);
+
+  /* ---------------- ADD / REMOVE ---------------- */
+
+  const addNewComment = useCallback(async (content) => {
+    if (!content.trim() || !currentBoulderId || !token) return;
+
+    setPostingComment(true);
+    try {
+      await addComment(token, content.trim(), currentBoulderId);
+
+      // 🔁 refresh comments
+      const res = await getComment(token, currentBoulderId);
+      if (!res?.error) {
+        setComments(res.comments || []);
+        setCommentCounts(prev => ({
+          ...prev,
+          [currentBoulderId]: res.comments.length,
+        }));
+      }
+    } finally {
+      setPostingComment(false);
+    }
+  }, [token, currentBoulderId]);
+
+  const removeComment = useCallback((commentId) => {
+    if (!token || !currentBoulderId) return;
+
+    Alert.alert('Confirm', 'Delete this comment?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteComment(token, commentId);
+          await openComments(currentBoulderId);
+        },
+      },
+    ]);
+  }, [token, currentBoulderId, openComments]);
+
+  /* ---------------- EXPORT ---------------- */
 
   return {
     comments,

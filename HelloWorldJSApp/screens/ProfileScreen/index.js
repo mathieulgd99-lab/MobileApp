@@ -400,8 +400,9 @@ export default function ProfileScreen({ route, navigation }) {
           }}
         >
           <Tab.Screen name="Statistic">
-            {() => (
+            {props => (
               <StatisticScreen
+                {...props}
                 user={profileUser}
                 token={token}
               />
@@ -409,8 +410,9 @@ export default function ProfileScreen({ route, navigation }) {
           </Tab.Screen>
 
           <Tab.Screen name="History">
-            {() => (
+            {props => (
               <HistoryScreen
+                {...props}
                 profileUser={profileUser}
                 token={token}
               />

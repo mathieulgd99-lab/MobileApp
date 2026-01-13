@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
 import { getEvents } from '../../api/auth';
+import colors from '../colors';
+
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL;
 //const API_BASE = "http://192.168.1.165:3000";
@@ -118,6 +120,11 @@ export default function EventScreen() {
   return (
     <>
       <FlatList
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={{
+          padding: ITEM_GAP,
+          backgroundColor: colors.background,
+        }}
         ListHeaderComponent={
           <Text style={styles.sectionTitle}>Upcoming events</Text>
         }
@@ -126,7 +133,6 @@ export default function EventScreen() {
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         columnWrapperStyle={{ gap: ITEM_GAP }}
-        contentContainerStyle={{ padding: ITEM_GAP }}
         extraData={events}
         ListFooterComponent={
           pastEvents.length > 0 ? (
@@ -214,6 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 12,
+    color: 'white',
   },
   card: {
     width: ITEM_WIDTH,
@@ -255,6 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     fontWeight: '500',
+    color: 'white',
   },
 
   /* MODAL */

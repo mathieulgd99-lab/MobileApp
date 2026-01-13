@@ -99,8 +99,9 @@
             }}
           >
             <Tab.Screen name="Modify the walls">
-              {() => (
+              {props => (
                   <ModifyWallsScreen
+                  {...props}
                   profileUser={profileUser}
                   token={token}
                 />
@@ -108,8 +109,9 @@
             </Tab.Screen>
   
             <Tab.Screen name="Add an event">
-              {() => (
+              {props => (
               <AddEventsScreen
+                  {...props}
                   profileUser={profileUser}
                   token={token}
                 />
