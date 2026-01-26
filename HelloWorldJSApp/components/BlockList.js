@@ -8,6 +8,7 @@ import { Snackbar } from 'react-native-paper';
 
 export default function BlocksList({
     boulders,
+    setBoulders,
     validatedBoulders = [],
     onPressImage,
     onOpenComments,
@@ -54,14 +55,24 @@ export default function BlocksList({
               onDeleteBoulder(item);
             } else {
               const res = await onArchiveBoulder(item);
-              if (res?.archived) {
-                setSnackbarText('🟢 Boulder archived successfully');
-              } else if (res.archived === false) {
-                setSnackbarText('🔵 Boulder unarchived successfully');
-              } else {
-                setSnackbarText('ERROR ARCHIVED')
+
+              if (res?.boulder) {
+                setBoulders(prev =>
+                  prev.map(b => b.id === res.boulder.id ? { ...b, ...res.boulder } : b)
+                );
+
+                if (res.archived) {
+                  setValidatedBoulders(prev =>
+                    prev.filter(v => v.id !== res.boulder.id)
+                  );
+                }
               }
 
+              setSnackbarText(
+                res?.archived
+                  ? '🟢 Boulder archived successfully'
+                  : '🔵 Boulder unarchived successfully'
+              );
               setSnackbarVisible(true);
             }
           },

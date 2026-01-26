@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   TouchableOpacity,
@@ -8,6 +7,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import * as ImagePicker from 'expo-image-picker';
 import { Video } from 'expo-av';
 
@@ -20,7 +21,6 @@ export default function UploadVideoModal({
   const [videoFile, setVideoFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  /* 🔄 reset propre quand la modale se ferme */
   useEffect(() => {
     if (!visible) {
       reset();
@@ -73,7 +73,7 @@ export default function UploadVideoModal({
 
         await onSubmit(formData);
       }
-
+      reset()
       onClose();
     } finally {
       setLoading(false);
@@ -83,12 +83,7 @@ export default function UploadVideoModal({
   const canSubmit = Boolean(instagramUrl || videoFile);
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}   // ✅ CRUCIAL
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
 
@@ -150,7 +145,7 @@ export default function UploadVideoModal({
 
         </View>
       </View>
-    </Modal>
+    </SafeAreaView>
   );
 }
 

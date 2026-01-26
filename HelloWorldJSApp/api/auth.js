@@ -478,6 +478,7 @@ export async function getUserValidatedDifficulties(userId,token,range,month) {
 
 export async function getBoulderVideos(boulderId, token) {
   try {
+    console.log("entrée auth.js getbouldervideos")
     const res = await fetch(
       `${API_BASE}/api/boulders/${boulderId}/videos`,
       {
@@ -497,7 +498,6 @@ export async function getBoulderVideos(boulderId, token) {
 
 export async function createBoulderVideo(boulderId, data, token) {
   const isFormData = data instanceof FormData;
-
   const res = await fetch(
     `${API_BASE}/api/boulders/${boulderId}/videos`,
     {
@@ -509,7 +509,6 @@ export async function createBoulderVideo(boulderId, data, token) {
       body: isFormData ? data : JSON.stringify(data),
     }
   );
-
   const json = await res.json();
   if (!res.ok) return { error: json };
   return json;

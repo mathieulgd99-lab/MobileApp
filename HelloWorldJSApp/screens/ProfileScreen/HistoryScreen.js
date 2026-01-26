@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,15 @@ import {
   TouchableOpacity,
   ScrollView
 } from 'react-native';
+import { useFocusEffect} from '@react-navigation/native';
 import styles from '../styles';
 import { AuthContext } from '../../context/AuthContext';
 import useBoulders from '../Hooks/useBoulder';
 import useComment from '../Hooks/useComment';
 import useBoulderModal from '../Hooks/useBoulderModal';
+import {
+  getValidatedBoulders,
+} from '../../api/auth';
 
 import BlocksList from '../../components/BlockList';
 import BoulderModal from '../../components/BoulderModal';
@@ -32,10 +36,10 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
   const imageModal = useBoulderModal();
 
   const {
-    loading,
     error,
     validatedBoulders,
     grades,
+    setValidatedBoulders,
     deleteBoulder,
     archiveBoulder,
     countGrade,
@@ -54,12 +58,38 @@ export default function HistoryScreen({ profileUser, token: tokenProp }) {
     initCommentCounts,
   } = useComment(authToken);
 
-  
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          setLoading(true);
+          const validated = await getValidatedBoulders(authToken);
+          if (!active) return;
+            setValidatedBoulders(validated.boulders);
+        } catch (err) {
+          console.error('Error loading history-validatedboulders', err);
+          setValidatedBoulders([]);
+        } finally {
+          if (active) setLoading(false);
+        }
+      })();
+
+      return () => {
+        active = false;
+      };
+    }, [getValidatedBoulders,setValidatedBoulders,authToken])
+  );
+
   useEffect(() => {
     if (validatedBoulders?.length) {
       initCommentCounts(validatedBoulders);
     }
   }, [validatedBoulders]);
+
+
 
   const filteredBoulders = validatedBoulders.filter(b => {
     if (!showAll && b.archived_at) return false;

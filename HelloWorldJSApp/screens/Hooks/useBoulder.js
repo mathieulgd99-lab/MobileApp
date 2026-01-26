@@ -63,27 +63,44 @@ export function useBoulders(token,userId = null) {
       if (!token) {
         throw new Error('Token required to validate a boulder');
       }
+  
       try {
         const res = await markBoulderAsCompleted(boulder.id, token);
-        if (!res.error) {
-          if (res.validated) {
-            setValidatedBoulders((prev) => {
-              if (prev.some((b) => b.id === boulder.id)) return prev;
-              return [...prev, boulder];
-            });
-          } else {
-            setValidatedBoulders((prev) => prev.filter((b) => b.id !== boulder.id));
-          }
-          return { ok: true, validated: res.validated };
-        } else {
+  
+        if (res?.error) {
           return { ok: false, error: res.error };
         }
+  
+        setValidatedBoulders((prev) => {
+          if (res.validated) {
+            if (prev.some((b) => b.id === boulder.id)) return prev;
+            return [...prev, boulder];
+          }
+          return prev.filter((b) => b.id !== boulder.id);
+        });
+  
+        if (res.boulder) {
+          setBoulders((prev) =>
+            prev.map((b) =>
+              b.id === boulder.id
+                ? { ...b, ...res.boulder }
+                : b
+            )
+          );
+        }
+  
+        return {
+          ok: true,
+          validated: res.validated,
+          boulder: res.boulder,
+        };
       } catch (err) {
         return { ok: false, error: err.message || 'Error validation' };
       }
     },
     [token]
   );
+  
 
   const deleteBoulder = useCallback(
     async (boulder) => {
@@ -208,6 +225,8 @@ export function useBoulders(token,userId = null) {
   return {
     boulders,
     validatedBoulders,
+    setValidatedBoulders,
+    setBoulders,
     loading,
     refreshing,
     error,

@@ -8,10 +8,10 @@ import {
 
 export default function useComment(token) {
   const [comments, setComments] = useState([]);
-  const [commentsModal, setCommentsModal] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
   const [commentCounts, setCommentCounts] = useState({});
   const [currentBoulderId, setCurrentBoulderId] = useState(null);
+  const [newComment, setNewComment] = useState('');
 
   /* ---------------- COUNTS ---------------- */
 
@@ -49,7 +49,6 @@ export default function useComment(token) {
           ...prev,
           [boulderId]: res.comments.length,
         }));
-        setCommentsModal(true);
       }
     } catch (e) {
       console.error(e);
@@ -57,21 +56,19 @@ export default function useComment(token) {
   }, [token]);
 
   const closeComments = useCallback(() => {
-    setCommentsModal(false);
     setCurrentBoulderId(null);
     setComments([]);
   }, []);
 
   /* ---------------- ADD / REMOVE ---------------- */
 
-  const addNewComment = useCallback(async (content) => {
-    if (!content.trim() || !currentBoulderId || !token) return;
-
+  const addNewComment = useCallback(async () => {
+    if (!newComment.trim() || !currentBoulderId || !token) return;
+  
     setPostingComment(true);
     try {
-      await addComment(token, content.trim(), currentBoulderId);
-
-      // 🔁 refresh comments
+      await addComment(token, newComment.trim(), currentBoulderId);
+  
       const res = await getComment(token, currentBoulderId);
       if (!res?.error) {
         setComments(res.comments || []);
@@ -80,10 +77,13 @@ export default function useComment(token) {
           [currentBoulderId]: res.comments.length,
         }));
       }
+  
+      setNewComment('');
     } finally {
       setPostingComment(false);
     }
-  }, [token, currentBoulderId]);
+  }, [token, currentBoulderId, newComment]);
+  
 
   const removeComment = useCallback((commentId) => {
     if (!token || !currentBoulderId) return;
@@ -105,13 +105,14 @@ export default function useComment(token) {
 
   return {
     comments,
-    commentsModal,
+    newComment,
+    setNewComment,
     postingComment,
-    openComments,
-    closeComments,
+    commentCounts,
     addNewComment,
     removeComment,
     getCommentCount,
     initCommentCounts,
+    openComments
   };
 }

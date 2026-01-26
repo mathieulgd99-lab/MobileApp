@@ -15,6 +15,9 @@ import styles from '../styles';
 import {
   getBoulders,
   getValidatedBoulders,
+  createBoulderVideo,
+  getBoulderVideos,
+  deleteVideo,
 } from '../../api/auth';
 
 import { AuthContext } from '../../context/AuthContext';
@@ -35,21 +38,22 @@ export default function BoulderScreen() {
   const { user, token } = useContext(AuthContext);
 
   const zones = [
-    { label: 'Mur Coin', points: '40,300 20,300 20,400 80,400 60,380 40,380' },
-    { label: 'Mur Dalle', points: '20,300 40,300 50,250 40,200 20,200' },
-    { label: 'Mur Tension', points: '20,200 40,200 40,120 20,100' },
-    { label: 'Mur Toit', points: '20,100 40,120 50,80 120,80 130,50 40,50' },
-    { label: 'Mur Dynamique', points: '130,50 120,80 220,80 220,50' },
-    { label: 'Mur Porte', points: '220,50 320,50 320,120 295,120 295,80 220,80' },
-    { label: 'Mur Devers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160' },
-    { label: 'Mur Diedre', points: '295,230 320,230 320,290 295,270' },
-    { label: 'Mur Angle', points: '295,270 320,290 250,290 260,270' },
-    { label: 'Mur Easy', points: '295,325 320,325 320,400 250,400 250,380 295,380' },
+    { label: 'Mur Coin', points: ' 40,300 20,300 20,400 80,400 60,380 40,380' },
+    { label: 'Mur Dalle', points: '20,300 40,300 50,250 40,200 20,200'},
+    { label: 'Mur Tension', points: '20,200 40,200 40,120 20,100'},
+    { label: 'Mur Toit', points: '20,100 40,120 50,80 120,80 130,50 40,50'},
+    { label: 'Mur Dynamique', points: '130,50 120,80 220,80 220,50'},
+    { label: 'Mur Porte', points: '220,50 320,50 320,120, 295,120 295,80 220,80'},
+    { label: 'Mur Devers', points: '295,120 320,120 320,230 295,230 295,210 280,190 295,160'},
+    { label: 'Mur Diedre', points: '295,230 320,230 320,290 295,270'},
+    { label: 'Mur Angle', points: '295,270 320,290 250,290 260,270'},
+    { label :'Mur Angle 2', points: '250,290 250,310 255,320 295,320 295,325 320,325 320,300 260,300 260,290'},
+    { label: 'Mur Easy', points: '295,325 320,325 320,400 250,400 250,380 295,380 '},
   ];
 
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
-  const [newComment, setNewComment] = useState('');
+  const [videos, setVideos] = useState([]);
 
   const uiModal = useUIModal();
 
@@ -72,11 +76,14 @@ export default function BoulderScreen() {
 
   const {
     comments,
+    newComment,
+    setNewComment,
     postingComment,
     addNewComment,
     removeComment,
     getCommentCount,
     initCommentCounts,
+    openComments,
   } = useComment(token);
 
   useEffect(() => {
@@ -102,6 +109,11 @@ export default function BoulderScreen() {
     grade: selectedGrade,
     archived: false,
   });
+  
+  const activeBoulder =
+  uiModal.payload?.boulderId
+    ? boulders.find(b => b.id === uiModal.payload.boulderId)
+    : null;
 
   const handleClickGrade = (gradeDifficulty) => {
     setSelectedGrade(prev => prev === gradeDifficulty ? null : gradeDifficulty)
@@ -121,13 +133,14 @@ export default function BoulderScreen() {
     setActiveBoulder(null);
   }
 
+  
+
   async function openVideos(boulderId) {
     try {
-      setShowVideos(true);
       setVideos([]);
   
       const res = await getBoulderVideos(boulderId, token);
-      console.log("res : ",res)
+      console.log("res getbouldervideos: ",res)
       if (!res.error) {
         setVideos(res.videos || []);
       } else {
@@ -155,7 +168,7 @@ export default function BoulderScreen() {
     );
     console.log("Boulderscreen finish createbouldervideo")
     if (!res.error) {
-      setUploadVideoVisible(false);
+      uiModal.back();
     }
   }
   
@@ -196,6 +209,7 @@ export default function BoulderScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: 16 }} style={{ backgroundColor: '#121212' }}>
+        <Text style={localStyles.mapTitle}>Gym map</Text>
         <Svg height="450" width="350" style={styles.map}>
           {zones.map(zone => (
             <Polygon
@@ -231,7 +245,7 @@ export default function BoulderScreen() {
                   {item.difficulty}
                 </Text>
                 <Text style={localStyles.gradeCount}>
-                  {countValidatedGrade(item.difficulty)}/{countGrade(item.difficulty)}
+                  {countValidatedGrade(item.difficulty,false)}/{countGrade(item.difficulty,false)}
                 </Text>
               </TouchableOpacity>
             );
@@ -240,10 +254,52 @@ export default function BoulderScreen() {
 
         <BlocksList
           boulders={filteredBoulders}
+          setBoulders={setBoulders}
           validatedBoulders={validatedBoulders}
-          onPressImage={boulder => uiModal.open('boulder', boulder)}
-          onOpenComments={id => uiModal.switchTo('comments', { boulderId: id })}
-          onToggleValidation={toggleValidation}
+          onPressImage={boulder =>
+            uiModal.open('boulder', { boulderId: boulder.id })
+          }
+          onOpenComments={async (id) => {
+            await openComments(id);
+            uiModal.switchTo('comments', { boulderId: id });
+          }}
+          
+          onToggleValidation={async (boulder) => {
+            const res = await toggleValidation(boulder);
+
+            if (res?.boulder) {
+              const updated = res.boulder;
+              console.log('toggleValidation blocklist res =', updated);
+              // validated est renvoyé au niveau racine par ton backend
+              const validated = typeof res.validated !== 'undefined' ? res.validated : null;
+            
+              // Remplace l'objet dans boulders par celui renvoyé par le serveur
+              setBoulders(prev =>
+                prev.map(b => (b.id === updated.id ? { ...b, ...updated } : b))
+              );
+            
+              // Si on a reçu explicitement le flag validated, mets à jour validatedBoulders en conséquence
+              if (validated !== null) {
+                setValidatedBoulders(prev =>
+                  validated
+                    ? (prev.some(v => v.id === updated.id) ? prev : [...prev, updated])
+                    : prev.filter(v => v.id !== updated.id)
+                );
+              } else {
+                // fallback : si on n'a pas le flag, bascule par présence/absence
+                setValidatedBoulders(prev =>
+                  prev.some(v => v.id === updated.id)
+                    ? prev.filter(v => v.id !== updated.id)
+                    : [...prev, updated]
+                );
+              }
+            
+              // Met à jour le payload du modal (utile si uiModal.payload contient des infos affichées)
+              if (uiModal.type === 'boulder') {
+                uiModal.updatePayload(prev => ({ ...prev, ...updated }));
+              }
+            }
+          }}
           getCommentCount={getCommentCount}
           imageBase={API_BASE}
           onDeleteBoulder={deleteBoulder}
@@ -259,29 +315,60 @@ export default function BoulderScreen() {
         presentationStyle="fullScreen"
         onRequestClose={uiModal.close}
       >
-        {uiModal.type === 'boulder' && (
+        {uiModal.type === 'boulder' && activeBoulder && (
           <BoulderModal
-            boulder={uiModal.payload}
+            boulder={activeBoulder}
             imageBase={API_BASE}
-            isValidated={isValidated(uiModal.payload?.id)}
-            onToggleValidation={toggleValidation}
+            isValidated={isValidated(uiModal.payload?.boulderId)}
+            onToggleValidation={async (boulder) => {
+              const res = await toggleValidation(boulder);
+            
+              if (res?.boulder) {
+                const updated = res.boulder;
+                console.log('toggleValidation modal res =', updated);
+                const validated = typeof res.validated !== 'undefined' ? res.validated : null;
+            
+                setBoulders(prev =>
+                  prev.map(b => (b.id === updated.id ? { ...b, ...updated } : b))
+                );
+            
+                if (validated !== null) {
+                  setValidatedBoulders(prev =>
+                    validated
+                      ? prev.some(v => v.id === updated.id) ? prev : [...prev, updated]
+                      : prev.filter(v => v.id !== updated.id)
+                  );
+                } else {
+                  setValidatedBoulders(prev =>
+                    prev.some(v => v.id === updated.id) ? prev.filter(v => v.id !== updated.id) : [...prev, updated]
+                  );
+                }
+            
+                if (uiModal.type === 'boulder') {
+                  uiModal.updatePayload(prev => ({ ...prev, ...updated }));
+                }
+              }
+            }}
+            
             onClose={uiModal.close}
-            onOpenComments={id =>
-              uiModal.switchTo('comments', { boulderId: id })
-            }
+            onOpenComments={async (id) => {
+              await openComments(id);
+              uiModal.switchTo('comments', { boulderId: id });
+            }}
             onUploadVideo={b =>
-              uiModal.switchTo('upload', { boulder: b })
+              uiModal.switchTo('upload', { boulderId: b.id })
             }
-            onOpenVideos={b =>
-              uiModal.switchTo('videos', { boulder: b })
-            }
+            onOpenVideos={async (boulder) => {
+              await openVideos(boulder.id);
+              uiModal.switchTo('videos', { boulderId: boulder.id });
+            }}
+            commentCount={getCommentCount(activeBoulder.id)}
           />
 
         )}
 
         {uiModal.type === 'comments' && (
           <CommentsModal
-            visible
             comments={comments}
             user={user}
             newComment={newComment}
@@ -289,21 +376,25 @@ export default function BoulderScreen() {
             postingComment={postingComment}
             onAddComment={addNewComment}
             onRemoveComment={removeComment}
-            onClose={uiModal.close}
+            onClose={uiModal.back}
           />
         )}
 
-        {uiModal.type === 'upload' && (
+
+        {uiModal.type === 'upload' && activeBoulder && (
           <UploadVideoModal
-            boulder={uiModal.payload.boulder}
-            onClose={uiModal.back} // ⬅️ RETOUR fluide vers le bloc 
-            />
+            boulder={activeBoulder}
+            onClose={uiModal.back}
+            onSubmit={handleSubmitVideo}
+          />
         )}
 
-        {uiModal.type === 'videos' && (
+        {uiModal.type === 'videos' && activeBoulder && (
           <PlayVideoModal
-            boulder={uiModal.payload?.boulder}
-            onClose={uiModal.back} // ⬅️ RETOUR fluide vers le bloc
+          videos={videos}
+          user={user}
+          onClose={uiModal.back}
+          onRemove={handleRemoveVideo}
           />
         )}
 
@@ -338,4 +429,12 @@ const localStyles = StyleSheet.create({
   gradeList: {
     marginVertical: 16,
   },
+  mapTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 12,
+    letterSpacing: 1,
+    alignSelf: 'center',
+  }
 });

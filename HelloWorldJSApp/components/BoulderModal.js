@@ -88,10 +88,8 @@ export default function BoulderModal({
       </ScrollView>
 
       <TouchableOpacity onPress={onClose} style={localStyles.closeButton}>
-          <Text style={localStyles.closeButtonText}>Close</Text>
-        </TouchableOpacity><TouchableOpacity onPress={onClose} style={localStyles.closeButton}>
-          <Text style={localStyles.closeButtonText}>Close</Text>
-        </TouchableOpacity>
+        <Text style={localStyles.closeButtonText}>Close</Text>
+      </TouchableOpacity>
 
       {/* COMMENTS */}
       <TouchableOpacity

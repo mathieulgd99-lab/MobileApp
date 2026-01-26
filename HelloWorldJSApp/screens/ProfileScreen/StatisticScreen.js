@@ -108,7 +108,7 @@ export default function StatisticScreen({ user, token }) {
             onPress={() => setRange(r)}
           >
             <Text style={styles_profile.filterText}>
-              {r === 'month' ? 'Mois' : r === 'year' ? 'Année' : 'Depuis le début'}
+              {r === 'month' ? 'Month' : r === 'year' ? 'Year' : 'Since beginning'}
             </Text>
           </TouchableOpacity>
         ))}

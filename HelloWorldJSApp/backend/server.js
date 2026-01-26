@@ -451,7 +451,15 @@ async function getOrCreateTodaySession(db, userId) {
           );
     
           await db.exec('COMMIT;');
-          return res.json({ validated: false });
+          const updatedBoulder = await db.get(
+            `SELECT id, validations_count, current_point FROM boulder WHERE id = ?`,
+            [boulderId]
+          );
+          
+          return res.json({
+            validated: false,
+            boulder: updatedBoulder,
+          });
         }
     
         // 
@@ -494,7 +502,15 @@ async function getOrCreateTodaySession(db, userId) {
         );
     
         await db.exec('COMMIT;');
-        res.json({ validated: true });
+
+        const updatedBoulder = await db.get(
+          `SELECT id, validations_count, current_point FROM boulder WHERE id = ?`,
+          [boulderId]
+        );
+        res.json({
+          validated: true,
+          boulder: updatedBoulder,
+        });
     
       } catch (err) {
         await db.exec('ROLLBACK;');
@@ -622,27 +638,95 @@ async function getOrCreateTodaySession(db, userId) {
 
     app.post('/api/boulders/archived/:boulderId', auth, requireAdmin, async (req, res) => {
       try {
-        const boulderId = req.params.boulderId;
+        const boulderId = Number(req.params.boulderId);
         if (!boulderId) return res.status(400).json({ error: "Missing boulder id" });
     
-        const result = await db.run(
-          `UPDATE boulder
-           SET archived_at = CASE WHEN archived_at IS NULL THEN datetime('now') ELSE NULL END
-           WHERE id = ?`,
-          [boulderId]
-        );
-
-        const updated = await db.get(
-          `SELECT archived_at FROM boulder WHERE id = ?`,
+        await db.exec('BEGIN TRANSACTION;');
+    
+        // Récupère l'état courant du bloc
+        const b = await db.get(
+          `SELECT id, archived_at, validations_count, current_point
+           FROM boulder WHERE id = ?`,
           [boulderId]
         );
     
-        res.json({
-          archived: updated.archived_at !== null,
-          archived_at: updated.archived_at
-        });
+        if (!b) {
+          await db.exec('ROLLBACK;');
+          return res.status(404).json({ error: "Boulder not found" });
+        }
     
+        const wasArchived = b.archived_at !== null;
+        const oldPoint = b.current_point || 0;
+        const validatorsSubquery = `SELECT user_id FROM boulder_validations WHERE boulder_id = ?`;
+    
+        if (!wasArchived) {
+          // ---- ARCHIVER : set current_point à 0 et retirer les points aux validateurs ----
+          await db.run(
+            `UPDATE boulder
+             SET archived_at = datetime('now'), current_point = 0, is_current = 0
+             WHERE id = ?`,
+            [boulderId]
+          );
+    
+          if (b.validations_count > 0 && oldPoint > 0) {
+            // Retire oldPoint à chaque validateur (évite valeurs négatives)
+            await db.run(
+              `UPDATE users
+               SET total_points = MAX(total_points - ?, 0)
+               WHERE id IN (${validatorsSubquery})`,
+              [oldPoint, boulderId]
+            );
+          }
+    
+          await db.exec('COMMIT;');
+    
+          const updated = await db.get(
+            `SELECT id, archived_at, validations_count, current_point FROM boulder WHERE id = ?`,
+            [boulderId]
+          );
+    
+          return res.json({
+            archived: true,
+            archived_at: updated.archived_at,
+            boulder: updated
+          });
+        } else {
+          // ---- DESARCHIVER : recalculer current_point et réattribuer aux validateurs ----
+          const newCount = b.validations_count;
+          const newPoint = newCount > 0 ? Math.floor(1000 / newCount) : 0;
+    
+          await db.run(
+            `UPDATE boulder
+             SET archived_at = NULL, current_point = ?, is_current = 1
+             WHERE id = ?`,
+            [newPoint, boulderId]
+          );
+    
+          if (newCount > 0 && newPoint > 0) {
+            // Ajoute newPoint à chaque validateur
+            await db.run(
+              `UPDATE users
+               SET total_points = total_points + ?
+               WHERE id IN (${validatorsSubquery})`,
+              [newPoint, boulderId]
+            );
+          }
+    
+          await db.exec('COMMIT;');
+    
+          const updated = await db.get(
+            `SELECT id, archived_at, validations_count, current_point FROM boulder WHERE id = ?`,
+            [boulderId]
+          );
+    
+          return res.json({
+            archived: false,
+            archived_at: null,
+            boulder: updated
+          });
+        }
       } catch (err) {
+        await db.exec('ROLLBACK;');
         console.error("Error toggling archived:", err);
         res.status(500).json({ error: "Internal server error" });
       }
