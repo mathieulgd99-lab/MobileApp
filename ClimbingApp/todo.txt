@@ -1,0 +1,14 @@
+count grade : ne pas prendre ne compte les grades archived  GOOOD
+comment modal : l'ouvrir quand on est pas sur un boulder GOOOD 
+validations : valider quand on est sur un boulder GOOOD
+validations : mettre a jour les textes de validations en temps réel GOOOD
+
+Ranking : ne pas compter les blocs archivés dans les validations
+
+
+Vidéos : tester
+Supprimer boulder : tester
+commentaire : tester
+valider boulder : tester
+Events : tester
+Statistic : mettre texte en anglais
