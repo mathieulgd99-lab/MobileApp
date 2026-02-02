@@ -92,14 +92,14 @@ export default function UploadVideoModal({
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Ajouter une vidéo</Text>
+          <Text style={styles.title}>Add a video</Text>
 
           {/* Upload video */}
           <TouchableOpacity style={styles.uploadBtn} onPress={pickVideo}>
             <Text style={styles.uploadText}>
               {videoFile
-                ? '🎬 Vidéo sélectionnée'
-                : '📤 Choisir une vidéo'}
+                ? '🎬 Video selected'
+                : '📤 Select a video'}
             </Text>
           </TouchableOpacity>
 
@@ -118,7 +118,7 @@ export default function UploadVideoModal({
           {/* Instagram link */}
           <TextInput
             style={styles.input}
-            placeholder="Lien Instagram"
+            placeholder="Instagram link"
             placeholderTextColor="#999"
             value={instagramUrl}
             onChangeText={(text) => {
