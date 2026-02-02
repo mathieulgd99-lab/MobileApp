@@ -119,14 +119,14 @@ export default function RankingScreen() {
     return (
       <View style={styles.ranking_container}>
         <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.ranking_loadingText}>Chargement du classement …</Text>
+        <Text style={styles.ranking_loadingText}>Loading ranking screen …</Text>
       </View>
     );
   }
 
   return (
       <View style={styles.ranking_container}>
-        <Text style={styles.ranking_title}>Classement</Text>
+        <Text style={styles.ranking_title}>Ranking</Text>
 
         <FlatList
           data={rest}
