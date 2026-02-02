@@ -1,81 +1,64 @@
-### SETUP
+# ClimbingApp
 
-Run the following commands :
+## Requirements
 
+Before running the project, make sure you have:
 
-if old npm version :
+- **Node.js** (recommended recent version)
+- **npm**
+- A smartphone with the **Expo Go** app installed
 
-```sh
-sudo apt remove -y nodejs libnode-dev
-sudo apt purge -y nodejs libnode-dev
-sudo apt autoremove -y
-```
+## How to Run the Project
 
-Init project :
-```sh
-npx create-expo-app HelloWorldApp
-```
+### 1. Frontend (Expo App)
 
-Then : 
+From the root of the repository:
 
-```sh
-npx expo start 
-# You need to install Expo Go on your cellphone and scan the QR generated
-# You need to be on the same wifi on your computer and cellphone
-```
+1. Navigate to the frontend folder:
+   ```bash
+   cd ClimbingApp
+   ```
 
-Shake your phone to have the developper menu
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
+3. Start the Expo development server:
+   ```bash
+   npx expo start
+   ```
 
+After running this command, a **QR code** will appear in the terminal or in your browser.  
+Scan this QR code with your **phone using the Expo Go app**.
 
-Navigation :
+**Important:**  
+Your **computer and your phone must be connected to the same internet network (Wi-Fi)** for the application to work properly.
 
-```sh
-npm install expo
-npm install @react-navigation/native
-npx expo install react-native-screens react-native-safe-area-context
-# To select differents pages/windows at the bottom
-npm install @react-navigation/bottom-tabs
-# To select differents pages/windows at the top
-npm install @react-navigation/material-top-tabs react-native-tab-view
-# To have a tab that can goes down
-npm install react-native-collapsible-tab-view
-# To open galery when administrator add new image
-npm install expo-image-picker
-# Create a dropdown menu
-expo install expo-image-picker
-# Permissions
-npx pod-install ios
-```
+---
 
-Backend :
-```sh
-# Gestion des fichiers - uploads  d'images.
-npm install multer
-```
-Install svg :
-```sh
-# To represent differents zones of the gym
-npm install @react-navigation/material-top-tabs react-native-tab-view
-```
-Install synchronisation :
-```sh
-# To access token
-npx expo install @react-native-async-storage/async-storage
-```
+### 2. Backend (API & Database)
 
-Backend : 
+In a separate terminal:
 
-```sh
-cd backend
-npm init -y
-npm install express sqlite sqlite3 jsonwebtoken bcryptjs cors dotenv http-status
+1. Navigate to the backend folder:
+   ```bash
+   cd ClimbingApp/backend
+   ```
 
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-node server.js
-```
+3. Start the backend server:
+   ```bash
+   node server.js
+   ```
 
-Install jwt signature/decode 
-```sh
-npm install jwt-decode
-```
+The backend must be running to allow access to the database.
+
+## Notes
+
+- Make sure the backend server is running before using features that require database access.
+- Backend configuration (such as ports) can be modified in the backend files if needed.

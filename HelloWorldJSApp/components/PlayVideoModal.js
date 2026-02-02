@@ -23,7 +23,7 @@ export default function PlayVideoModal({
 
         {/* CONTENT */}
         {videos.length === 0 ? (
-          <Text style={{ color: '#aaa' }}>Aucune vidéo pour ce bloc</Text>
+          <Text style={{ color: '#aaa' }}>No videos for this boulder</Text>
         ) : (
           <FlatList
             data={videos}
